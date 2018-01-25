@@ -5,7 +5,7 @@ library(ggplot2)
 
 # Ler os dados ------------------------------------------------------------
 # download.file('https://github.com/curso-r/pu.modelos/blob/master/data/BodyFat.xls?raw=true', 'aula5/bodyfat.xls')
-bodyfat <- read_excel('Modelagem/DataBases/bodyfat.xls')
+bodyfat <- read_excel('Aula 02/DataBases/bodyfat.xls')
 
 
 # Análise -----------------------------------------------------------------

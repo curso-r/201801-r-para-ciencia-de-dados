@@ -1,0 +1,384 @@
+---
+title: "Aprendizado Estatístico"
+author: "Bruno Daleffi"
+date: "31/01/2018"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+## O que é aprendizado estatístico?
+
+## Tipos de aprendizado
+
+- Supervisionado
+
+* Envolve a construção de um modelo estatístico para prever ou estimar uma resposta de acordo com uma ou mais informações de entrada.
+* **Exemplo**: Um estudo estatístico cujo objetivo é estimar a probabilidade de uma transação ser uma fraude e são fornecidos dados relativos a transações passadas bem como se
+estas foram uma fraude ou não. 
+ 
+- Não Supervisionado
+
+* Existem variáveis de entrada mas não existe uma variável resposta.
+* **Exemplo**: Um estudo em que são fornecidas diversas informações sobre os hábitos de compras dos clientes e deseja-se identificar diferentes segmentos.
+
+## Aprendizado Supervisionado
+
+1. Definir o objetivo
+2. Definir a variável resposta ($y$)
+3. Definir as covariáveis que ajudam a prever a resposta ($X$)
+4. Coletar dados
+5. Ajustar/Treinar o modelo
+
+
+## Exemplos 
+
+1. Árvores de Decisão
+2. Regressão Linear
+3. Regressão Logística
+4. Florestas Aleatórias
+5. Redes Neurais
+
+
+## Exemplos
+
+1. **Árvores de Decisão**
+2. **Regressão Linear**
+3. **Regressão Logística**
+4. Florestas Aleatórias
+5. Redes Neurais
+
+
+
+## Arvore de decisao
+- Os modelos de árvore de decisão como vamos utilizar são implementados de acordo com o livro Classification and Regression Trees de Breiman, Friedman, Olshen e Stone.
+- Pacotes utilizados: rpart, rpart.plot
+alternativas: tree, party
+
+## Arvore de decisao
+
+- Cria regras do tipo se-então para aproximar uma função.
+
+![](http://scikit-learn.org/stable/_images/sphx_glr_plot_tree_regression_001.png)
+
+
+## Árvore de decisão
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+base <- purrr::map_df(c(0, 2), ~data.frame(color = .x, x = rnorm(100, .x)))
+base <- base %>% mutate(cor = ifelse(color <= 0, 'azul', 'laranja'))
+ggplot(base, aes(x = x, fill = cor)) + 
+  geom_histogram(position = 'dodge', bins = 20) +
+  scale_fill_manual(values = c('azul' = 'blue', 'laranja' = 'orange'))
+```
+
+## Exemplo 1:
+
+No R
+
+
+##
+
+![](arvore.png)
+
+## Aprendizado Supervisionado
+
+1. Definir o objetivo
+2. Definir a variável resposta ($y$)
+3. Definir as covariáveis que ajudam a prever a resposta ($X$)
+4. **Ajustar/Treinar o modelo**
+
+
+## O que é treinar o modelo?
+
+
+Estimar a função $f$ nesta equação:
+
+$$y = f(X) + \epsilon$$
+em que:
+
+- $y$ é a variável resposta
+- $X$ é uma matriz de covariáveis
+- $\epsilon$ é um componente de aleatoriedade
+
+## Como estimar $f$?
+
+- Árvore de decisão
+- Regressão linear
+- Regressão logística
+- Florestas Aleatórias
+- Redes Neurais
+
+## Regressão linear
+
+Suposição de que $f(X)$ é da forma:
+
+$$f(X) = \alpha + \beta X$$
+
+Reduz o problema para: estimar $\alpha$ e $\beta$.
+
+## Como estimar $\alpha$ e $\beta$?
+
+$\alpha$ e $\beta$ são escolhidos de tal forma que:
+
+$$\sum_{i = 1}^{n} [y_i - (\alpha + \beta x_i)]^2$$
+seja o menor possível. Isto é, estamos minimizando o *erro quadrático*.
+
+## Exemplo 2:
+
+No R
+
+
+## Exercício 1:
+
+1. Utilize os dados do data_frame *Cars*
+
+2. Construa um gráfico com as variáveis *speed* vs *dist*
+
+3. Ajuste um modelo de regressão linear simples para tentar prever a variável *dist* através da variável *speed*
+
+4. Reflita sobre o ajuste do modelo.
+
+## Regressão logística
+
+
+
+- Probabilidade: Mede a perspectiva da ocorrência de um determinado evento A: $$p_A = \frac{n_A}{N}$$
+  
+  
+- Chance: $$Odds_A = \frac{p_A}{(1-p_A)}$$
+  
+  
+- Razão de chances: $$\frac{Odds_A}{Odds_B} = \frac{[p_A/(1-p_A)]}{[p_B/(1-p_B)]}$$
+  
+  
+## Regressão logística
+
+
+
+- Logito: $$logit = ln(\frac{Odds_A}{Odds_B})$$
+
+
+## Regressão logística
+
+A suposição é de que:
+
+$$E(y) = \frac{1}{1 + e^{-f(X)}} = \frac{e^{f(X)}}{1 + e^{f(X)}}$$
+
+
+Em que $f(X)$ é uma função da forma $f(X) = \alpha + \beta X$
+
+
+- Como $y \sim B(p)$, então $E(y) = p$
+
+
+Logo $$E(y) = p = \frac{e^{f(X)}}{1 + e^{f(X)}}$$ 
+
+
+## Regressão logística
+$$=> ln(\frac{p}{1-p}) = f(X) = \alpha + \beta X$$
+É linear no log da razão de chances => aplicar uma regressão linear usual.
+
+## Regressão logística
+
+Porque?
+
+- Fácil de interpretar: os coeficientes do modelo relacionam-se à chance do evento acontecer
+- A relação linear não precisa de cair em um intervalo ex. [0,1]
+- A deriavada é fácil de ser calculada 
+
+## Como estimar $\alpha$ e $\beta$?
+
+Os parâmetros são estimados de forma que minimize o erro de classificação:
+
+$$\sum_{i=1}^{n} (y_i - \frac{1}{1 + e^{-f(X_i)}})$$
+
+## Exemplo 3:
+
+No R
+
+## Exercício 2:
+
+- carregue os dados dos sobreviventes do titanic
+- selecione uma amostra aleatoria que represente 70% de toda a base e guarde os outros 30% em outra tabela.
+- Na base de tamanho 70% da original, rode um modelo de regressão logistica tendo como resposta a variável Survived e como variáveis exlpicativas: sexo, Idade e classe.
+- Utilize o modelo para predizer os indivíduos da outra base.
+- Verifique se o modelo se ajustou bem.
+
+
+## Overfitting
+
+- Deve ser uma das principais preocupações quando ajustamos um modelo
+
+## O que é overfitting?
+
+O modelo está ajustando variações que são inerentemente aleatórias dos dados.
+
+## Exemplo 4
+
+No R
+
+## Como evitar overfitting?
+
+- Será que o meu modelo está muito complexo?
+- Princípio da Navalha de Ocam ou Lei da parcimônia
+
+Na prática:
+
+- Separar a base em 2 partes: treino e teste e avaliar o erro na base de teste
+- Outros métodos de avaliação de performance: KS, curva ROC (Regressão Logística)
+- Cross-validation
+
+
+## Cross-Validation
+
+
+## Agenda
+
+- Instalar 3 pacotes
+- Ver vídeo sobre RGB de 30 segundos
+- Fazer análise estatística I (onda roxa)
+- Fazer análise estatística II (xadrez)
+- Fazer análise estatística III (som do captcha para letra)
+
+
+```{r a, eval = FALSE}
+install.packages("GGally")
+install.packages("jpeg")
+install.packages("rpart.plot")
+```
+
+
+[Vídeo sobre RGB](https://www.youtube.com/watch?v=CrBFNLvoL6A)
+
+
+
+## Cross-Validation
+
+```{r b, echo=FALSE, message=FALSE}
+# Pacotes -----------------------------------------------------------------
+library(ggplot2)
+library(tidyr)
+library(dplyr)
+```
+
+```{r c}
+
+# Gerar dados -------------------------------------------------------------
+set.seed(7)
+dados <- data_frame(
+  x = runif(10),
+  y = 2*x + 3*x^2 + rnorm(10, 0, 0.15) 
+)
+
+# gerando mais dados
+dados2 <- data_frame(
+  x = runif(100),
+  y = 2*x + 3*x^2 + rnorm(100, 0, 0.1) 
+)
+
+```
+
+
+```{r d}
+
+ggplot(dados, aes(x = x, y = y)) + geom_point()
+
+```
+
+## Cross-Validation
+```{r e, echo = FALSE}
+
+modelo <- lm(y ~ x, data = dados)
+modelo2 <- lm(y ~ poly(x, 2), data = dados)
+modelo3 <- lm(y ~ poly(x, 3), data = dados)
+modelo4 <- lm(y ~ poly(x, 4), data = dados)
+modelo5 <- lm(y ~ poly(x, 5), data = dados)
+modelo6 <- lm(y ~ poly(x, 6), data = dados)
+modelo7 <- lm(y ~ poly(x, 7), data = dados)
+modelo8 <- lm(y ~ poly(x, 8), data = dados)
+modelo9 <- lm(y ~ poly(x, 9), data = dados)
+
+erro_modelo1 <- mean((dados$y - predict(modelo, newdata = dados))^2)
+erro_modelo2 <- mean((dados$y - predict(modelo2, newdata = dados))^2)
+erro_modelo3 <- mean((dados$y - predict(modelo3, newdata = dados))^2)
+erro_modelo4 <- mean((dados$y - predict(modelo4, newdata = dados))^2)
+erro_modelo5 <- mean((dados$y - predict(modelo5, newdata = dados))^2)
+erro_modelo6 <- mean((dados$y - predict(modelo6, newdata = dados))^2)
+erro_modelo7 <- mean((dados$y - predict(modelo7, newdata = dados))^2)
+erro_modelo8 <- mean((dados$y - predict(modelo8, newdata = dados))^2)
+erro_modelo9 <- mean((dados$y - predict(modelo9, newdata = dados))^2)
+
+erro_ajuste <- c(erro_modelo1 = erro_modelo1,
+erro_modelo2 = erro_modelo2,
+erro_modelo3 = erro_modelo3,
+erro_modelo4 = erro_modelo4,
+erro_modelo5 = erro_modelo5,
+erro_modelo6 = erro_modelo6,
+erro_modelo7 = erro_modelo7,
+erro_modelo8 = erro_modelo8,
+erro_modelo9 = erro_modelo9) %>% round(3)
+
+ggplot(dados, aes(x = x, y = y)) + geom_point() + 
+  geom_smooth(formula = y ~ x, colour = "red", se = FALSE, method = 'lm') +
+  geom_smooth(formula = y ~ poly(x, 2), colour = "orange", se = FALSE, method = 'lm') +
+  geom_smooth(formula = y ~ poly(x, 3), colour = "purple", se = FALSE, method = 'lm') +
+  geom_smooth(formula = y ~ poly(x, 4), colour = "royalblue", se = FALSE, method = 'lm') +
+  geom_smooth(formula = y ~ poly(x, 5), colour = "grey", se = FALSE, method = 'lm') +
+  geom_smooth(formula = y ~ poly(x, 6), colour = "pink", se = FALSE, method = 'lm') +
+  geom_smooth(formula = y ~ poly(x, 7), colour = "brown", se = FALSE, method = 'lm') +
+  geom_smooth(formula = y ~ poly(x, 8), colour = "blue", se = FALSE, method = 'lm') 
+
+
+erro_modelo1 <- mean((dados2$y - predict(modelo, newdata = dados2))^2)
+erro_modelo2 <- mean((dados2$y - predict(modelo2, newdata = dados2))^2)
+erro_modelo3 <- mean((dados2$y - predict(modelo3, newdata = dados2))^2)
+erro_modelo4 <- mean((dados2$y - predict(modelo4, newdata = dados2))^2)
+erro_modelo5 <- mean((dados2$y - predict(modelo5, newdata = dados2))^2)
+erro_modelo6 <- mean((dados2$y - predict(modelo6, newdata = dados2))^2)
+erro_modelo7 <- mean((dados2$y - predict(modelo7, newdata = dados2))^2)
+erro_modelo8 <- mean((dados2$y - predict(modelo8, newdata = dados2))^2)
+erro_modelo9 <- mean((dados2$y - predict(modelo9, newdata = dados2))^2)
+
+erro_teste <- c(erro_modelo1 = erro_modelo1,
+                 erro_modelo2 = erro_modelo2,
+                 erro_modelo3 = erro_modelo3,
+                 erro_modelo4 = erro_modelo4,
+                 erro_modelo5 = erro_modelo5,
+                 erro_modelo6 = erro_modelo6,
+                 erro_modelo7 = erro_modelo7,
+                 erro_modelo8 = erro_modelo8,
+                 erro_modelo9 = erro_modelo9) %>% round(3)
+# 
+# ggplot(dados, aes(x = x, y = y)) + 
+#   geom_point(data = dados2, colour = "orange") + 
+#   geom_smooth(formula = y ~ x, colour = "red", se = FALSE, method = 'lm') +
+#   geom_smooth(formula = y ~ poly(x, 2), colour = "orange", se = FALSE, method = 'lm') +
+#   geom_smooth(formula = y ~ poly(x, 3), colour = "purple", se = FALSE, method = 'lm') +
+#   geom_smooth(formula = y ~ poly(x, 4), colour = "royalblue", se = FALSE, method = 'lm') +
+#   geom_smooth(formula = y ~ poly(x, 5), colour = "grey", se = FALSE, method = 'lm') +
+#   geom_smooth(formula = y ~ poly(x, 6), colour = "pink", se = FALSE, method = 'lm') +
+#   geom_smooth(formula = y ~ poly(x, 7), colour = "brown", se = FALSE, method = 'lm') +
+#   geom_smooth(formula = y ~ poly(x, 8), colour = "blue", se = FALSE, method = 'lm') +
+#   geom_point() 
+
+```
+
+## Cross-Validation
+```{r f, echo=FALSE}
+cbind(erro_ajuste, erro_teste) %>%
+  as.data.frame %>%
+  mutate(grau_do_polinomio = 1:n()) %>%
+  filter(grau_do_polinomio < 7) %>%
+  gather(base, erro, starts_with("erro")) %>%
+  ggplot() +
+  geom_line(aes(x = grau_do_polinomio, y = erro, colour = base))
+  # geom_smooth(aes(x = grau_do_polinomio, y = erro, colour = base), span = 1, se = FALSE)
+```
+
+

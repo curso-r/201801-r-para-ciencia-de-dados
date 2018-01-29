@@ -547,26 +547,6 @@ Vamos trabalhar com `decisoes`!
 
 Essa base de dados contém decisões do Tribunal de Justiça de São Paulo
 
-
-```{r eval=FALSE}
-decisoes <- read_rds("data/decisoes_old.rds")  %>%
-  mutate(class_subject = class_subject %>%
-           str_replace_all("Classe/Assunto:", "") %>%
-           str_trim()) %>%
-  select(
-    `ID Decisão` = id_decision,
-    n_processo = id_lawsuit,
-    `Classe/Assunto` = `class_subject`,
-    Município = district,
-    Câmara = court,
-    `Data decisão` = dt_decision,
-    `Data registro` = dt_registration,
-    Juiz = rapporteur,
-    `txt decisão` = summary)
-
-write_rds(decisoes, "data/tjsp.rds", compress = "bz2")
-```
-
 ```{r}
 decisoes_sujo <- read_rds("data/decisoes.rds")
 glimpse(decisoes_sujo)
@@ -853,15 +833,6 @@ Até agora, estudamos os principais ferramentas de transformação de dados do `
 Vamos utilizar uma nova base de dados, que completa a de decisões.
 
 ```{r echo=TRUE}
-# processos <- read_rds("data/processos_nested_old.rds")
-# processos %>% 
-#   select(n_processo = id_lawsuit, 
-#          infos = data, 
-#          partes = parts, 
-#          results = decisions) %>% 
-#   distinct(n_processo, .keep_all = TRUE) %>% 
-#   write_rds("data/processos_nested.rds", compress = "bz2")
-
 processos <- read_rds("data/processos_nested.rds")
 glimpse(processos)
 ```
@@ -1040,6 +1011,8 @@ pnud_min <- read_rds("data/pnud_min.rds")
 pnud_min_sp <- pnud_min %>% 
   filter(uf == "SP", ano == 2010) %>% 
   mutate(muni = rm_accent(muni))
+
+pnud_min_sp
 ```
 
 O Anti join mostra os casos de `decisoes_muni` que não bateram com `pnud_muni_sp`:

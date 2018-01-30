@@ -1,0 +1,1164 @@
+---
+title: "Aula 01 - Transformação de dados"
+author: "Julio Trecenti"
+date: "January 28, 2018"
+output: html_notebook
+---
+
+```{r include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE)
+```
+
+
+# R para ciência de dados
+
+
+
+Seja bem vinda! Nesse curso você... 
+
+- apronfundará seus conhecimentos em transformação de dados usando R
+
+- aprenderá a ajustar modelos estatísticos para previsão e classificação
+
+- aprenderá a comunicar as suas análises usando ferramentas do R como o `shiny`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+
+
+## Quem é a Curso-R?
+
+
+
+Você quis dizer...
+
+
+
+
+
+
+- Apóstolos do `tidyverse`?
+
+- Turma da `R`izzada?
+
+- The `purrr`wer Rangers?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                                        SIM!
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/foto_curso_r_caio.jpg")
+```
+
+
+
+
+
+
+Neste curso:
+
+- Athos Damiani
+- Caio Lente
+- **Daniel Falbel**
+- Fernando Correa 
+- **Julio Trecenti**
+- **William Amorim**
+
+Convidados:
+
+- Bruno Daleffi
+- Milene Farhat
+
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+
+
+
+## Outline do curso
+
+
+
+(29/01): Intro, importação, transformação: @jtrecenti
+
+(31/01): Modelagem: @williamorim e @brunodaleffi 
+
+(02/02): Programação funcional: @ctlente
+
+(05/02): Dashboards / pacotes: @brunodaleffi e @ctlente
+
+(07/02): Web scraping e APIs: @daniel e @ctlente
+
+
+
+Depois desse curso, você se sentirá assim
+
+
+
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/stark.jpg")
+```
+
+
+
+
+
+Se você não praticar, você ficará assim
+
+
+
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/meme_purrr.jpg")
+```
+
+
+
+
+
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+## Material base
+
+
+O material do curso está disponível nessas páginas (em desenvolvimento):
+
+- https://github.com/curso-r/201801-4-para-ciencia-de-dados
+- http://material.curso-r.com/
+
+
+
+Também temos um blog 100% open source:
+
+http://curso-r.com/blog/
+
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/share.png")
+```
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+
+
+## Dinâmica das aulas
+
+- Aulas expositivas em blocos de 1h20.
+
+- Intervalo de 10~20 min.
+
+- Exercícios no decorrer das aulas.
+
+- Leituras e exercícios complementares opcionais fora da sala de aula.
+
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+
+## Exercício 1: Setup 
+
+  
+
+1.1. Logar no servidor http://
+    - Login: `rt1.<numero_da_sua_maquina>`
+    - Senha: `curso-r`
+
+1.2. Novo projeto > Version Control > GIT
+
+1.3. Coloque a URL https://github.com/curso-r/201801-r-para-ciencia-de-dados
+
+1.4. Inicie o projeto
+
+1.5. Abra o arquivo `aula-01.Rmd`, dentro da pasta `aula-01/`
+
+1.6. Encontre a linha onde está esse exercício.
+
+1.7. Dê 2 cliques (selecione) o texto `AQUI`, ali embaixo.
+
+1.8. Digite `Ctrl+Alt+I`. Isso abrirá um *chunk*. 
+    - É dentro do chunk que você roda códigos R.
+    - NÀO ESCREVA CÓDIGOS R FORA DOS CHUNKS
+
+1.9. Rode `library(tidyverse)`
+
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/tidyverse.jpeg")
+```
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+
+
+## Requisitos
+
+
+- Ambientação com o R (calculadora, sintaxe etc)
+
+- Saber usar o RStudio
+
+- Conhecer RMarkdown
+
+- Saber usar o `%>%`
+
+- Conhecer o objeto `data.frame` do R
+
+
+
+
+
+
+
+### Exercício 2
+
+
+2.1. Qual a diferença entre uma `matrix` e um `data.frame`?
+
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+
+
+
+
+
+## Revisão: RMarkdown
+
+
+- Forma de escrever textos e códigos tudo junto
+    - Use *chunks*: Ctrl + Alt + I
+- Excelente para análises estatísticas, anotações de aulas
+- Utiliza Markdown, um formato que pode virar qualquer coisa
+    - `#`, `##` para títulos
+    - `*`, `**`, `backtick` para negrito, itálico etc
+    - `$$` para fórmulas (MathJax)
+- Com RMarkdown, é possível fazer relatórios, artigos, teses, apresentações, dashboards, e sites
+
+$$
+\cup\cap\cup\cup\cap\cup\int\sum\int \;\;\;R^{md}\text{ rocks}!\;\;\;\int\sum\int\cup\cap\cup\cup\cap\cup
+$$
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+## Revisão: pipe `%>%`
+
+```{r, out.width="49%", echo=FALSE}
+knitr::include_graphics(c("imgs/magrittr.png", "imgs/magritte.jpg"))
+```
+
+Considere o seguinte exemplo:
+
+```{r}
+f <- function(x, y) x + y
+x <- 1
+y <- 2
+```
+
+As duas linhas abaixo são equivalentes:
+
+```{r}
+# caso você ainda não tenha carregado
+library(tidyverse)
+
+f(x, y)
+x %>% f(y)
+```
+
+
+### Receita de bolo
+
+Tente entender o que é preciso fazer. 
+
+```{r, eval=FALSE}
+esfrie(
+  asse(
+    coloque(
+      bata(
+        acrescente(
+          recipiente(rep("farinha", 2), "água", 
+                     "fermento", "leite", "óleo"), 
+          "farinha", até = "macio"), 
+        duração = "3min"), 
+      lugar = "forma", tipo = "grande", 
+      untada = TRUE), duração = "50min"), 
+  "geladeira", "20min")
+```
+
+
+
+
+
+
+
+
+
+
+Desistiu? Agora veja como fica escrevendo com o `%>%`:
+
+```{r, eval=FALSE}
+
+recipiente(rep("farinha", 2), "água", "fermento", "leite", "óleo") %>%
+  acrescente("farinha", até = "macio") %>%
+  bata(duração = "3min") %>%
+  coloque(lugar = "forma", tipo = "grande", untada = TRUE) %>%
+  asse(duração = "50min") %>%
+  esfrie("geladeira", "20min")
+
+```
+
+Agora o código realmente parece uma receita de bolo.
+
+Para mais informações sobre o `pipe` e exemplos de utilização, visite a página [Ceci n'est pas un pipe](http://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html).
+
+
+
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+# Importação e transformação de dados
+
+
+Nessa parte vamos trabalhar com a fase **wrangle** do fluxo da ciência de dados.
+
+
+```{r, out.width="90%", echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/wrangle.png")
+```
+
+
+E o que é wrangle?
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/data_wrangler.png")
+```
+
+
+
+
+
+
+
+> "(...) The fact that data science exists as a field is a colossal failure of statistics. To me, [what I do] is what statistics is all about. It is gaining insight from data using modelling and visualization. Data munging and manipulation is hard and statistics has just said that’s not our domain."
+> 
+> Hadley Wickham
+
+
+
+
+
+
+Tudo isso é muito importante, por três motivos principais: 
+
+1. é uma das partes mais difíceis: quase impossível que robôs aprendam a arrumar dados
+
+2. sem um bd arrumado, não se faz modelagem alguma.
+
+3. nessa parte podemos explorar todas as maravilhas do `tidyverse`.
+
+
+
+
+
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+## Importação com `readr`, `readxl`, `haven` e `DBI`
+
+
+Importação de dados pode ser uma tarefa simples como ler um arquivo `.csv` ou uma tarefa complicada como construir um *web scraper* para baixar dados automaticamente da web.
+
+Os tipos mais comuns de fontes de dados são *textos*, *binários*, *bancos de dados* e *listas*. No tidyverse, geralmente
+
+- Funções `read_<formato>` servem para ler um arquivo no formato `<formato>`
+- Funções `write_<formato>` servem para escrever num arquivo com o formato `<formato>`
+
+
+### Arquivos de texto
+
+- `csv`, `tsv`, `txt`, ...
+
+- Para esses aqui, usar o pacote `readr`
+- Você também pode experimentar o `data.table::fread`
+
+Exemplo:
+
+```{r}
+read_csv("data/import/mtcars.csv")
+data.table::fread("data/import/mtcars.csv")
+```
+
+### Arquivos binários
+
+- `.RData`, `.rds`, `.feather`, `.fst`
+- `.dta` (Stata), `.sas7bdat` (SAS), `.sav` (SPSS)
+
+- Ler com `readr`, `haven`, `feather`, `fst`.
+
+Exemplo:
+
+```{r}
+read_rds("data/import/mtcars.rds")
+```
+
+### Bancos de dados
+
+- `MySQL`, `SQL Server`, `PostgreSQL`, `SQLite`, ...
+- `Spark`, `MongoDB`, `Hive`, ...
+
+- Utilizar pacotes `DBI` e `odbc`
+- **Estude**: https://db.rstudio.com
+
+
+
+```{r}
+library(DBI)
+library(RSQLite)
+# con <- dbConnect(RSQLite::SQLite(), "data/import/mtcars.sqlite")
+# dbWriteTable(con, "mtcars", mtcars)
+
+con <- dbConnect(RSQLite::SQLite(), "data/import/mtcars.sqlite")
+dbReadTable(con, "mtcars")
+```
+
+
+
+### Arquivos em formato de lista
+
+
+```{r}
+readxl::read_excel("data/import/mtcars.xlsx")
+```
+
+### Exercício 3
+
+3.1. (para casa) Carregue mais dois ainda não lidos da pasta `data/import/`.
+
+3.2. `.RData` e `.rds` são os formatos ideais para trabalhar em projetos no R. Qual a diferença entre eles e por quê o `.rds` geralmente é mais útil?
+
+3.3. (para casa) Leia o help da função `rio::import`. O que essa função faz?
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+
+
+## Pacotes `dplyr` e `tidyr`
+
+Vamos trabalhar com `decisoes`!
+
+Essa base de dados contém decisões do Tribunal de Justiça de São Paulo
+
+```{r}
+decisoes_sujo <- read_rds("data/decisoes.rds")
+glimpse(decisoes_sujo)
+```
+
+**Para aquecer**: vamos arrumar os nomes dessa base de dados
+
+- utilize a função `janitor::clean_names()` para limpar os nomes
+- utilize o combo `abjutils::rm_accent()` e `purrr::set_names()` para remover acentos dos nomes das colunas
+
+```{r}
+library(janitor)
+library(abjutils)
+
+decisoes <- decisoes_sujo %>% 
+  clean_names() %>% 
+  set_names(rm_accent)
+
+glimpse(decisoes)
+```
+
+
+### Características do `dplyr`
+
+
+- O _input_  é sempre uma `tibble`, e o _output_  é sempre um `tibble`.
+
+
+- No primeiro argumento colocamos o `tibble`, e nos outros argumentos colocamos o que queremos fazer.
+
+
+- A utilização é facilitada com o emprego do operador `%>%`
+
+
+### As cinco funções principais do `dplyr`
+
+
+
+- `select`: selecionar colunas
+
+- `filter`: filtrar linhas
+
+- `mutate`: criar colunas
+
+- `arrange`: ordenar linhas
+
+- `summarise`: sumarizar colunas
+
+
+
+
+### `select`
+
+- Utilizar `starts_with(x)`, `contains(x)`, `matches(x)`, `one_of(x)`, etc.
+- Possível colocar nomes, índices, e intervalos de variáveis com `:`.
+
+```{r}
+decisoes %>% 
+  select(id_decisao, n_processo, municipio, juiz)
+```
+
+
+
+
+
+```{r}
+decisoes %>% 
+  select(id_decisao:classe_assunto, juiz)
+```
+
+
+
+
+```{r}
+decisoes %>% 
+  select(id_decisao, starts_with('data_'))
+```
+
+
+
+Exercício 4: 
+
+4.1. selecione as colunas que acabam com "cisao".
+
+
+
+4.2. tire as colunas de texto e classe/assunto.
+    - Dica: veja os exemplos de `?select` em `Drop variables ...`
+
+
+
+
+
+### `filter`
+
+- Use `,` ou `&` para "e" e `|` para "ou".
+- Condições separadas por vírgulas é o mesmo que separar por `&`.
+
+
+
+
+```{r}
+decisoes %>% 
+  select(n_processo, id_decisao, municipio, juiz) %>% 
+  filter(municipio == 'São Paulo')
+```
+
+Dica: usar `%in%`
+
+
+```{r}
+library(lubridate) # para trabalhar com as datas
+
+decisoes %>% 
+  select(id_decisao, municipio, data_decisao, juiz) %>% 
+  # municipio igual a campinas ou jaú, OU dia da decisão maior ou igual a 25
+  filter(municipio %in% c('Campinas', 'Jaú') | day(dmy(data_decisao)) >= 25)
+```
+
+**Obs**: `day(dmy(data_decisao))` pega o dia da decisão. Estudaremos o pacote `lubridate` em outra aula.
+
+
+```{r}
+decisoes %>% 
+  select(juiz) %>% 
+  # filtra juízes que têm `Z` ou `z` no nome
+  filter(str_detect(juiz, '[zZ]')) %>% 
+  # conta e ordena os juizes em ordem decrescente
+  count(juiz, sort = TRUE)
+```
+
+**Obs**: A função `str_detect()` retorna `TRUE` se um elemento do vetor de textos é compatível com uma *expressão regular*. Estudaremos o pacote `stringr` e as funções `str_*` em outra aula.
+
+
+
+
+Exercício 5:
+
+    
+5.1. filtre apenas casos em que `id_decisão` não é `NA`
+
+
+
+5.2. (para casa) filtre todas as decisões de 2018.
+    - Dica: função `lubridate::year()`
+
+
+
+
+
+### `mutate`
+
+- Aceita várias novas colunas iterativamente.
+- Novas variáveis devem ter o mesmo `length` que o `nrow` do bd original ou `1`.
+
+```{r}
+decisoes %>% 
+  select(n_processo, data_decisao, data_registro) %>% 
+  mutate(tempo = dmy(data_registro) - dmy(data_decisao))
+```
+
+Exercício 6:
+
+
+6.1. Crie uma coluna binária `drogas` que vale `TRUE` se no texto da decisão algo é falado de drogas e `FALSE` caso contrário. 
+
+Considere tanto a palavra `droga` como seus sinônimos, ou algum exemplo de droga. Retire os casos em que `txt_decisao` é vazio
+
+Dica: arrume o código abaixo
+
+```{r eval=FALSE}
+decisoes %>% 
+  mutate(txt_decisao = tolower(txt_decisao),
+         droga = str_detect(txt_decisao, "txt drogas separando por '|'")) 
+  
+```
+
+
+6.2. A partir do resultado acima, conte o número de observações com `count()` e agrupe pelo município com `group_by()`.
+
+
+
+
+
+6.3. Crie uma coluna que dá o total de casos e outra com o porcentual de casos
+
+
+
+```{r eval=FALSE}
+decisoes %>% 
+  mutate(txt_decisao = tolower(txt_decisao),
+         droga = str_detect(txt_decisao, "txt drogas separando por '|'")) %>% 
+  # retira NA da decisao
+  filter(NAO É NA (txt_decisao)) %>% 
+  # conta municípios e droga
+  count(variáveis que quero contar) %>% 
+  # agrupa por município
+  group_by(variável que quero agrupar) %>% 
+  # cria coluna de totais e proporção
+  mutate(ntot = ?, prop = ?)
+```
+
+
+
+6.4. Retire municípios com menos de 100 casos.
+
+
+
+
+### `arrange`
+
+- Simplesmente ordena de acordo com as opções.
+- Utilizar `desc` para ordem decrescente.
+
+Exercício 7:
+
+7.1. Ordene o resultado anterior para descobrir os municípios com maior e menor proporção de decisões com drogas.
+
+
+
+### `summarise`
+
+- Retorna um vetor de tamanho `1` a partir de uma conta com as variáveis.
+- Geralmente é utilizado em conjunto com `group_by()`.
+- Algumas funções importantes: `n()`, `n_distinct()`.
+
+```{r}
+decisoes %>% 
+  select(n_processo, municipio, data_decisao) %>%
+  #        pega ano da decisão
+  mutate(ano_julgamento = year(dmy(data_decisao)),
+         # pega o ano do processo 0057003-20.2017.8.26.0000" -> "2017"
+         ano_proc = str_sub(n_processo, 12, 15),
+         # transforma o ano em inteiro
+         ano_proc = as.numeric(ano_proc),
+         # calcula o tempo em anos
+         tempo_anos = ano_julgamento - ano_proc) %>% 
+  group_by(municipio) %>% 
+  summarise(n = n(),
+            media_anos = mean(tempo_anos),
+            min_anos = min(tempo_anos),
+            max_anos = max(tempo_anos)) %>% 
+  filter(n >= 30) %>% 
+  arrange(desc(media_anos))
+```
+
+A função `count()`, que já vimos, simplifica um `group_by %>% summarise %>% ungroup`:
+
+```{r}
+decisoes %>% 
+  count(juiz, sort = TRUE) %>% 
+  mutate(prop = n / sum(n), 
+         prop = scales::percent(prop))
+```
+
+Exercício 8:
+
+8.1. Quem é o relator mais prolixo?
+    - Dica: use `str_length()`
+
+8.2. (para casa) Calcule medidas descritivas do tempo entre `data_decisao` e `data_registro`. Em média, qual juiz demora mais para registrar uma decisão?
+
+```{r eval=FALSE}
+decisoes %>% 
+  mutate(tempo = dmy(data_registro) - dmy(data_decisao)) %>% 
+  # group_by(juiz) %>% 
+  summarise(medidas descritivas)
+```
+
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+
+
+
+# Transformação de dados 2
+
+Até agora, estudamos os principais ferramentas de transformação de dados do `dplyr`. Agora vamos aumentar nosso toolkit com `tidyr`
+
+
+Vamos utilizar uma nova base de dados, que completa a de decisões.
+
+```{r echo=TRUE}
+processos <- read_rds("data/processos_nested.rds")
+glimpse(processos)
+```
+
+
+## Funções do `tidyr`
+
+- O `dplyr` está para o `tidyr` assim como tesoura/cola está para um alicate/martelo.
+
+
+- Enquanto o `dplyr` faz recortes na base (com `filter()`e `select()`) e adições simples (`mutate()`, `summarise()`), o `tidyr` mexe no **formato** da tabela (`gather()`, `spread()`) e faz modificações menos triviais.
+
+
+- As funções do `tidyr` geralmente vêm em pares com seus inversos:
+    - `gather()` e `spread()`,
+    - `nest()` e `unnest()`,
+    - `separate()` e `unite()`
+
+
+
+### `gather()` e `spread()`
+
+- `gather()` empilha o banco de dados
+
+
+
+```{r, warning=FALSE, message=FALSE}
+decisoes %>% 
+  filter(!is.na(id_decisao)) %>% 
+  select(id_decisao:data_registro) %>% 
+  # 1. nome da coluna que vai guardar os nomes de colunas empilhadas
+  # 2. nome da coluna que vai guardar os valores das colunas
+  # 3. seleção (igual select()) das colunas a serem empilhadas
+  gather(key, value, -id_decisao) %>% 
+  arrange(id_decisao)
+```
+
+
+- `spread()` espalha uma variável nas colunas e preenche com outra variável
+- É essencialmente a função inversa de `gather`
+
+```{r}
+decisoes %>% 
+  filter(!is.na(id_decisao)) %>% 
+  select(id_decisao:data_registro) %>% 
+  gather(key, value, -id_decisao) %>% 
+  # 1. coluna a ser jogada
+  # 2. valores da coluna
+  spread(key, value)
+```
+
+
+Exercício 9:
+
+9.1. A partir do exercício 6.4., espalhe a coluna "droga"
+    - Dica 1: você não pode espalhar duas colunas de valor, logo você precisa tirar uma delas com `select()`
+    - Dica 2: Veja o que os parâmetros `fill=` e `sep=` fazem. Nesse caso pode ser útil!
+
+
+### Unindo e separando colunas
+
+- `unite` junta duas ou mais colunas usando algum separador (`_`, por exemplo).
+- `separate` faz o inverso de `unite`, e uma coluna em várias usando um separador.
+
+```{r}
+decisoes %>% 
+  select(n_processo, classe_assunto) %>% 
+  separate(classe_assunto, c('classe', 'assunto'), sep = ' / ', 
+           extra = 'merge', fill = 'right') %>% 
+  count(assunto, sort = TRUE)
+```
+
+
+Exercício 10:
+
+10.1. (para casa) Antes de fazer o `spread()` do exercício 9.1, ao invés de retirar a coluna `n`,
+faça um mutate na coluna `prop` com `scales::percent()` e depois use `unite()` para unir `n` e `prop`. Depois disso faça o spread.
+
+```{r eval=FALSE}
+codigos anteriores %>% 
+  mutate(prop = scales::percent(prop)) %>% 
+  unite(vamos unir essas colunas!) %>% 
+  spread(exercício 9.1)
+```
+
+
+
+
+### List columns: `nest()` e `unnest()`
+
+`nest()` e `unnest()` são operações inversas e servem para tratar dados complexos, como o que temos em `processos`
+
+```{r}
+d_partes <- processos %>% 
+  select(n_processo, partes) %>% 
+  unnest(partes)
+
+glimpse(d_partes)
+```
+
+As list columns são uma forma condensada de guardar dados que estariam em múltiplas tabelas. Por exemplo, uma alternativa à colocar as `partes` numa list column seria guardar a tabela `d_partes` separadamente.
+
+
+
+
+
+
+### Duplicatas
+
+Para retirar duplicatas, utilizar `distinct`. Ele considera apenas a primeira linha em que encontra um padrão para as combinações de variáveis escolhidas e descarta as demais.
+
+```{r echo=TRUE}
+decisoes %>% 
+  distinct(municipio)
+```
+
+Para manter as demais colunas, use `.keep_all=`:
+
+```{r echo=TRUE}
+decisoes %>%
+  distinct(municipio, .keep_all = TRUE)
+```
+
+
+Use `janitor::get_dupes()` para averiguar os casos em que há repetição de combinações de colunas.
+
+```{r echo=TRUE}
+decisoes %>% 
+  get_dupes(n_processo)
+```
+
+
+Para mais aplicações do `janitor`, ver [este blog post](http://curso-r.com/blog/2017/07/24/2017-07-24-janitor/).
+
+
+
+
+
+
+### Joins
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/join-venn.png")
+```
+
+
+Para juntar tabelas, usar `inner_join`, `left_join`, `anti_join`, etc. O melhor material disso está em http://r4ds.had.co.nz/relational-data.html.
+
+Exemplo de inner join:
+
+```{r echo=TRUE}
+decisoes %>% 
+  filter(data_registro == "18/01/2018", !is.na(id_decisao)) %>% 
+  select(id_decisao, n_processo) %>% 
+  inner_join(processos, "n_processo")
+```
+
+
+Exemplo de right join:
+
+
+```{r echo=TRUE}
+decisoes %>% 
+  filter(data_registro == "18/01/2018", !is.na(id_decisao)) %>% 
+  select(id_decisao, n_processo) %>% 
+  right_join(processos, "n_processo")
+```
+
+#### Anti join
+
+Anti join serve para arrumar o *de-para* de duas tabelas. Por exemplo, considere os Dados de IDH municipal no Brasil abaixo.
+
+```{r}
+pnud_min <- read_rds("data/pnud_min.rds")
+
+pnud_min_sp <- pnud_min %>% 
+  filter(uf == "SP", ano == 2010) %>% 
+  mutate(muni = rm_accent(muni))
+
+pnud_min_sp
+```
+
+O Anti join mostra os casos de `decisoes_muni` que não bateram com `pnud_muni_sp`:
+
+```{r}
+decisoes_muni <- decisoes %>% 
+  mutate(muni = toupper(rm_accent(municipio))) %>% 
+  distinct(muni)
+
+anti_join(decisoes_muni, pnud_min_sp, "muni")
+```
+
+Veja o motivo pelo qual o join de `SANTA BARBARA D OESTE` não funcionou.
+
+```{r}
+pnud_min_sp %>% 
+  filter(str_detect(muni, "SANTA BARBARA D"))
+```
+
+Para arrumar, podemos utilizar `case_when()`:
+
+```{r}
+decisoes_muni <- decisoes %>% 
+  mutate(muni = toupper(rm_accent(municipio))) %>% 
+  distinct(muni) %>% 
+  mutate(muni = case_when(
+    # condicao lógica ~ "substituição",
+    muni == "SANTA BARBARA D OESTE" ~ "SANTA BARBARA D'OESTE",
+    # isso funciona como um se / se não / se
+    muni == "IPAUCU" ~ "IPAUSSU",
+    # no final, deixar todo o resto (TRUE) como está
+    TRUE ~ muni
+  ))
+
+anti_join(decisoes_muni, pnud_min_sp, "muni")
+```
+
+
+Exercício 11:
+
+11.1. Retire os casos em que `muni` é vazio, `COMARCA NAO INFORMADA` ou `TRIBUNAL DE JUSTICA`
+
+11.2. (para casa) Complete o `case_when()` com os municípios restantes.
+    - Dica: Procure os nomes corretos em `pnud_min_sp` usando
+    
+```{r eval=FALSE}
+pnud_min_sp %>% 
+  filter(str_detect(muni, "PARTE DO NOME DO MUNICIPIO"))
+```
+    
+
+**Extra**: Podemos usar o `fuzzyjoin` para juntar tabelas de forma espertinha
+
+```{r}
+library(fuzzyjoin)
+
+decisoes_muni_arrumado <- decisoes %>% 
+  mutate(muni = toupper(rm_accent(municipio))) %>% 
+  distinct(muni) %>% 
+  # olha o exercício 11.1 aqui!
+  filter(!is.na(muni), 
+         !muni %in% c("COMARCA NAO INFORMADA", "TRIBUNAL DE JUSTICA"))
+
+
+decisoes_muni_arrumado %>% 
+  stringdist_left_join(pnud_min_sp, "muni",
+                       max_dist = 2, distance_col = "dist") %>% 
+  # pegando só os que deram diferente
+  filter(muni.x != muni.y) %>% 
+  select(muni.x, muni.y, dist) %>% 
+  arrange(desc(dist))
+```
+
+Ainda tem alguns que não deram match...
+
+```{r}
+decisoes_muni_arrumado %>% 
+  stringdist_anti_join(pnud_min_sp, "muni", max_dist = 2)
+```
+
+Base de dados final: 
+
+```{r}
+decisoes_muni_arrumado <- decisoes %>% 
+  mutate(muni = toupper(rm_accent(municipio))) %>% 
+  distinct(muni) %>% 
+  # olha o exercício 11.1 aqui!
+  filter(!is.na(muni), 
+         !muni %in% c("COMARCA NAO INFORMADA", "TRIBUNAL DE JUSTICA")) %>% 
+  mutate(muni = case_when(
+    muni == "EMBU DAS ARTES" ~ "EMBU",
+    muni == "FORO DE OUROESTE" ~ "OUROESTE",
+    TRUE ~ muni
+  )) %>% 
+  stringdist_inner_join(pnud_min_sp, "muni", 
+                        max_dist = 2, distance_col = "dist") %>% 
+  arrange(dist) %>% 
+  # pega só o match mais próximo
+  distinct(muni.x, .keep_all = TRUE)
+```
+
+Economia de código/tempo:
+
+```{r}
+decisoes_muni_arrumado %>% 
+  filter(muni.x != muni.y)
+```
+
+
+
+
+<!-- ----------------------------------------------------------------------- -->
+
+## Wrap-up
+
+Hoje mexemos com importação transformação de dados
+
+1. importação de dados
+    - funções do tipo `read_*()` e `write_*()`
+    - tipos de input: texto, binário, banco de dados, lista
+        - excel é do tipo lista!
+2. os cinco verbos do `dplyr`
+    - `select()`, `filter()`, `mutate()`, `arrange()`, `summarise()`
+3. as funções inversíveis do `tidyr`
+    - `gather()` e `spread()`
+    - `unite()` e `separate()`
+    - `nest()` e `unnest()`
+4. miscelânea
+    - `distinct()` para retirar duplicatas.
+    - `case_when()` para reclassificações.
+    - `clean_names()`, `get_dupes()` do pacote `janitor`
+    - `rm_accent()` do pacote `abjutils`
+    - `stringdist_*_join()` do pacote `fuzzyjoin`
+
+
+
+
+Na próxima vez, vamos visualizar dados com `ggplot2!`
+
+```{r, echo=FALSE, fig.align='center'}
+knitr::include_graphics("imgs/visualize.jpg")
+```
+
+
+
+
+
+
+

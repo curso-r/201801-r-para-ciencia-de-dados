@@ -48,9 +48,9 @@ ggplot(houston, aes(month, f1units + 1)) +
 Vamos ajustar um modelo linear para avaliar o efeito de mês.
 
 ```{r}
-library(modelr)
-
 houston_mod <- lm(log(f1units) ~ factor(month), data = houston)
+
+library(modelr)
 
 houston %>%
   add_predictions(houston_mod) %>%
@@ -74,6 +74,10 @@ houston %>%
 
 ### Supervisionado
 
+Queremos encontrar uma função $f()$ que relaciona a resposta aos preditores, visando predizer precisamente a resposta (predição) ou entender melhor a relação entre a resposta e os preditores (inferência).
+
+A variável resposta "supervisiona" o aprendizado.
+
 $$
 y \approx f(X)
 $$
@@ -94,11 +98,16 @@ $$
 
 ### Não-supervisionado
 
+$$
+X_1, X_2, \dots, X_p
+$$
+
+
 Não vamos abordar nesse curso.
 
 - Exemplos
 
-1. Análise de agrupamento
+1. Análise de cluster
 2. PCA
 
 ## Regressão Linear
@@ -106,6 +115,15 @@ Não vamos abordar nesse curso.
 $$
 y \approx \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
 $$
+
+$$
+y = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p + \epsilon
+$$
+
+$$
+E(y) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
+$$
+
 
 ### Fórmulas
 
@@ -129,10 +147,10 @@ $$
 y = \beta_0 + \beta_{jan} X_{jan} + \beta_{fev} X_{fev} \cdots \beta_{dez} X_{dez} + \epsilon
 $$
 
-
-
 ```{r}
 houston_mod <- lm(log(f1units) ~ factor(month), data = houston)
+
+model.matrix()
 
 houston_mod
 summary(houston_mod)
@@ -150,11 +168,14 @@ Referências `modelr`:
 
 ### Exercício
 
-1) Gere uma amostra aleatória de tamanho 10 de pares (Y, X) com a seguinte relação:
+1) Gere uma amostra aleatória de tamanho 10 de pares (X,Y) com a seguinte relação:
 
 $$
 Y = 2 + 3X + X^2 + \epsilon, \quad X \sim U(0, 1), \quad \epsilon \sim N(0, 0.3)
 $$
+
+
+
 
 ```{r}
 # Como vamos gerar números aleatórios, precisamos setar uma semente para que nossos resultados possam ser reprodutíveis.
@@ -215,6 +236,8 @@ modelo9 <- lm()
 $$
 EQM = \frac{1}{n}\sum_{i=1}^n(y - \hat{y})^2.
 $$
+
+
 
 Qual modelo você acredita ter o menor EQM? Rode o código abaixo e verifique.
 
@@ -291,6 +314,10 @@ ggplot(dados, aes(x = x, y = y)) +
   geom_smooth(formula = y ~ poly(x, 9), colour = "blue", se = FALSE, method = 'lm')
 ```
 
+- **Erro de treino**: é o erro encontrado ao aplicar o modelo na própria base utilizada para treiná-lo.
+
+- **Erro de teste**: é o erro encontrado ao aplicar o modelo a uma base não utilizada no treino.
+
 - **Bias**: o erro introduzido por aproximar um problema da vida real, que pode ser extremamente complicado, por um modelo muito mais simples.
 
 - **Variância**: o quanto as estimativas dos parâmetros mudariam se nós os estimássemos usando um outro conjunto de dados.
@@ -323,7 +350,27 @@ erro_modelo9 = erro_modelo9) %>% round(3)
 erro_ajuste
 ```
 
-**Validação cruzada**: usar uma porção dos dados, que não foi utilizada para no treino, para avaliar o trade off viés/variância do modelo.
+**Validação cruzada**: usar uma porção dos dados, que não foi utilizada para no treino, para avaliar o erro de teste.
+
+- Validation set
+
+```{r}
+knitr::include_graphics("Imagens/validation-set.png")
+```
+
+
+- LOOCV
+
+```{r}
+knitr::include_graphics("Imagens/loocv.png")
+```
+
+- k-fold Cross Validation
+
+```{r}
+knitr::include_graphics("Imagens/k-fold-cv.png")
+```
+
 
 Referência: [Introduction to statistical learning](http://www-bcf.usc.edu/~gareth/ISL/)
 
@@ -357,8 +404,11 @@ text(arvore_podada)
 - Modelos a probabilidade de Y = 1 dado X.
 
 $$
-P(Y = 1 | X) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
+E(Y) = P(Y = 1 | X) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
 $$
+
+
+
 
 Como 0 < P < 1, usamos a função logística
 
@@ -366,11 +416,15 @@ $$
 P(Y = 1 | X) = \frac{e^{\beta_0 + \beta_1 X_1 + \cdots \beta_p X_p}}{1 + e^{\beta_0 + \beta_1 X_1 + \cdots \beta_p X_p}}
 $$
 
+
+
 que é equivalente a
 
 $$
 \log\left(\frac{P(Y = 1 | X)}{1 - P(Y = 1 | X)}\right) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
 $$
+
+
 
 O lado esquerdo da expressão é chamado de logito.
 
@@ -451,3 +505,21 @@ plot_roc(titanic_roc, threshold = 0.42)
 
 3. Use validação cruzada para determinar o tamanho da árvore.
 
+
+## Misc
+
+- glmnet (regularização)
+
+https://web.stanford.edu/~hastie/glmnet/glmnet_alpha.html
+
+
+- caret (bazuca para modelagem)
+
+http://caret.r-forge.r-project.org/
+
+
+- keras (traz o framework do tensorflow para R)
+
+https://keras.rstudio.com/
+http://curso-r.com/blog/
+http://curso-r.com/blog/2017/07/29/2017-07-29-segundo-menor-dl/

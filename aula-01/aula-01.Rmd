@@ -55,7 +55,11 @@ Você quis dizer...
 
 - Apóstolos do `tidyverse`?
 
+
+
 - Turma da `R`izzada?
+
+
 
 - The `purrr`wer Rangers?
 
@@ -75,7 +79,7 @@ Você quis dizer...
 
 
 
-                                        SIM!
+                                SIM!
 
 
 
@@ -180,7 +184,7 @@ knitr::include_graphics("imgs/meme_purrr.jpg")
 
 O material do curso está disponível nessas páginas (em desenvolvimento):
 
-- https://github.com/curso-r/201801-4-para-ciencia-de-dados
+- https://github.com/curso-r/201801-r-para-ciencia-de-dados
 - http://material.curso-r.com/
 
 
@@ -227,9 +231,9 @@ knitr::include_graphics("imgs/share.png")
 
   
 
-1.1. Logar no servidor http://
-    - Login: `rt1.<numero_da_sua_maquina>`
-    - Senha: `curso-r`
+1.1. Logar no servidor http://r.curso-r.com
+    - Login: `rt1_<numero_da_sua_maquina>`
+    - Senha: `cursor`
 
 1.2. Novo projeto > Version Control > GIT
 
@@ -241,13 +245,24 @@ knitr::include_graphics("imgs/share.png")
 
 1.6. Encontre a linha onde está esse exercício.
 
-1.7. Dê 2 cliques (selecione) o texto `AQUI`, ali embaixo.
+1.7. Coloque o cursor abaixo do 1.9.
 
 1.8. Digite `Ctrl+Alt+I`. Isso abrirá um *chunk*. 
     - É dentro do chunk que você roda códigos R.
     - NÀO ESCREVA CÓDIGOS R FORA DOS CHUNKS
 
 1.9. Rode `library(tidyverse)`
+
+```{r}
+
+library(tidyverse)
+
+```
+
+
+
+
+
 
 
 ```{r, echo=FALSE, fig.align='center'}
@@ -289,6 +304,19 @@ knitr::include_graphics("imgs/tidyverse.jpeg")
 
 
 
+
+```{r}
+m <- matrix(1:10, ncol = 2)
+m[1,1] <- "texto"
+m
+```
+
+```{r}
+d <- data.frame(a = 1:5, b = 6:10)
+d$a[1] <- "texto"
+
+
+```
 
 
 <!-- ----------------------------------------------------------------------- -->
@@ -345,6 +373,7 @@ library(tidyverse)
 
 f(x, y)
 x %>% f(y)
+
 ```
 
 
@@ -388,6 +417,9 @@ recipiente(rep("farinha", 2), "água", "fermento", "leite", "óleo") %>%
   esfrie("geladeira", "20min")
 
 ```
+
+%>% Ctrl + Shift + M 
+
 
 Agora o código realmente parece uma receita de bolo.
 
@@ -475,10 +507,15 @@ Os tipos mais comuns de fontes de dados são *textos*, *binários*, *bancos de d
 - Para esses aqui, usar o pacote `readr`
 - Você também pode experimentar o `data.table::fread`
 
+
+'readr' para textos
+
 Exemplo:
 
 ```{r}
 read_csv("data/import/mtcars.csv")
+
+
 data.table::fread("data/import/mtcars.csv")
 ```
 
@@ -511,7 +548,10 @@ library(RSQLite)
 # con <- dbConnect(RSQLite::SQLite(), "data/import/mtcars.sqlite")
 # dbWriteTable(con, "mtcars", mtcars)
 
-con <- dbConnect(RSQLite::SQLite(), "data/import/mtcars.sqlite")
+con <- dbConnect(RSQLite::SQLite(), 
+                 "data/import/mtcars.sqlite")
+
+
 dbReadTable(con, "mtcars")
 ```
 
@@ -530,6 +570,21 @@ readxl::read_excel("data/import/mtcars.xlsx")
 
 3.2. `.RData` e `.rds` são os formatos ideais para trabalhar em projetos no R. Qual a diferença entre eles e por quê o `.rds` geralmente é mais útil?
 
+```{r}
+mtcars <- 2
+
+save(mtcars, cars,
+     file = "data/import/mtcars.RData")
+load("data/import/mtcars.RData")
+
+write_rds(mtcars, "data/import/mtcars.rds")
+mtcars <- read_rds("data/import/mtcars.rds")
+```
+
+
+
+
+
 3.3. (para casa) Leia o help da função `rio::import`. O que essa função faz?
 
 
@@ -545,12 +600,19 @@ readxl::read_excel("data/import/mtcars.xlsx")
 
 Vamos trabalhar com `decisoes`!
 
+
+
 Essa base de dados contém decisões do Tribunal de Justiça de São Paulo
 
 ```{r}
 decisoes_sujo <- read_rds("data/decisoes.rds")
+
 glimpse(decisoes_sujo)
+
+View(decisoes_sujo)
 ```
+
+
 
 **Para aquecer**: vamos arrumar os nomes dessa base de dados
 
@@ -563,7 +625,7 @@ library(abjutils)
 
 decisoes <- decisoes_sujo %>% 
   clean_names() %>% 
-  set_names(rm_accent)
+  purrr::set_names(rm_accent)
 
 glimpse(decisoes)
 ```
@@ -614,7 +676,7 @@ decisoes %>%
 
 ```{r}
 decisoes %>% 
-  select(id_decisao:classe_assunto, juiz)
+  select(classe_assunto:id_decisao, juiz)
 ```
 
 
@@ -632,11 +694,20 @@ Exercício 4:
 4.1. selecione as colunas que acabam com "cisao".
 
 
+```{r}
+decisoes %>% 
+  select(ends_with("cisao"))
+```
 
-4.2. tire as colunas de texto e classe/assunto.
+
+4.2. tire as colunas de texto = 'txt_decisao' e classe/assunto = 'classe_assunto'.
     - Dica: veja os exemplos de `?select` em `Drop variables ...`
 
 
+```{r}
+decisoes %>% 
+  select(-classe_assunto, -txt_decisao)
+```
 
 
 
@@ -670,10 +741,12 @@ decisoes %>%
 
 
 ```{r}
+# 
+
 decisoes %>% 
   select(juiz) %>% 
   # filtra juízes que têm `Z` ou `z` no nome
-  filter(str_detect(juiz, '[zZ]')) %>% 
+  filter(str_detect(juiz, regex("z", ignore_case = TRUE))) %>% 
   # conta e ordena os juizes em ordem decrescente
   count(juiz, sort = TRUE)
 ```
@@ -686,7 +759,13 @@ decisoes %>%
 Exercício 5:
 
     
-5.1. filtre apenas casos em que `id_decisão` não é `NA`
+5.1. filtre apenas casos em que `id_decisao` não é `NA`
+
+```{r}
+decisoes %>% 
+  filter(is.na(id_decisao))
+```
+
 
 
 
@@ -718,20 +797,33 @@ Considere tanto a palavra `droga` como seus sinônimos, ou algum exemplo de drog
 Dica: arrume o código abaixo
 
 ```{r eval=FALSE}
-decisoes %>% 
+base_agrupada <- decisoes %>% 
+  filter(!is.na(txt_decisao)) %>% 
   mutate(txt_decisao = tolower(txt_decisao),
-         droga = str_detect(txt_decisao, "txt drogas separando por '|'")) 
+         droga = str_detect(txt_decisao,
+    "droga|entorpecente|psicotr[óo]pico|maconha|haxixe|coca[íi]na")) %>% 
+  count(municipio, droga) %>% 
+  group_by(municipio)
   
+base_agrupada
 ```
 
 
-6.2. A partir do resultado acima, conte o número de observações com `count()` e agrupe pelo município com `group_by()`.
+6.2. A partir do resultado acima, conte o número de observações de municipios e indicador de droga com `count()` e agrupe pelo município com `group_by()`.
 
 
 
 
 
 6.3. Crie uma coluna que dá o total de casos e outra com o porcentual de casos
+
+
+```{r}
+base_agrupada %>% 
+  mutate(ntot = sum(n),
+         prop = n / ntot) %>% 
+  filter(ntot >= 100)
+```
 
 
 
@@ -753,17 +845,32 @@ decisoes %>%
 
 6.4. Retire municípios com menos de 100 casos.
 
+```{r}
+base_agrupada %>% 
+  mutate(ntot = sum(n),
+         prop = n / ntot) %>% 
+  filter(ntot >= 100)
+
+```
 
 
 
 ### `arrange`
 
 - Simplesmente ordena de acordo com as opções.
-- Utilizar `desc` para ordem decrescente.
+- Utilizar `desc()` para ordem decrescente.
 
 Exercício 7:
 
 7.1. Ordene o resultado anterior para descobrir os municípios com maior e menor proporção de decisões com drogas.
+
+```{r}
+base_agrupada %>% 
+  mutate(ntot = sum(n),
+         prop = n / ntot) %>% 
+  filter(ntot >= 50) %>% 
+  arrange(desc(droga), desc(prop))
+```
 
 
 
@@ -807,6 +914,28 @@ Exercício 8:
 8.1. Quem é o relator mais prolixo?
     - Dica: use `str_length()`
 
+```{r}
+
+quantile()
+
+decisoes %>% 
+  filter(!is.na(txt_decisao)) %>% 
+  mutate(tamanho = str_length(txt_decisao)) %>% 
+  group_by(juiz) %>% 
+  summarise(n = n(), 
+            tamanho_mediana = median(tamanho)) %>% 
+  filter(n >= 10) %>% 
+  arrange(desc(tamanho_mediana))
+
+coluna <- "juiz"
+decisoes %>% 
+  select(!!coluna)
+
+```
+
+
+
+
 8.2. (para casa) Calcule medidas descritivas do tempo entre `data_decisao` e `data_registro`. Em média, qual juiz demora mais para registrar uma decisão?
 
 ```{r eval=FALSE}
@@ -835,6 +964,8 @@ Vamos utilizar uma nova base de dados, que completa a de decisões.
 ```{r echo=TRUE}
 processos <- read_rds("data/processos_nested.rds")
 glimpse(processos)
+
+processos$partes[[3]]
 ```
 
 
@@ -926,6 +1057,8 @@ codigos anteriores %>%
 `nest()` e `unnest()` são operações inversas e servem para tratar dados complexos, como o que temos em `processos`
 
 ```{r}
+processos
+
 d_partes <- processos %>% 
   select(n_processo, partes) %>% 
   unnest(partes)
@@ -953,7 +1086,8 @@ Para manter as demais colunas, use `.keep_all=`:
 
 ```{r echo=TRUE}
 decisoes %>%
-  distinct(municipio, .keep_all = TRUE)
+  distinct(municipio, camara, 
+           .keep_all = TRUE)
 ```
 
 
@@ -1134,12 +1268,19 @@ Hoje mexemos com importação transformação de dados
     - funções do tipo `read_*()` e `write_*()`
     - tipos de input: texto, binário, banco de dados, lista
         - excel é do tipo lista!
+        
+        
+        
 2. os cinco verbos do `dplyr`
     - `select()`, `filter()`, `mutate()`, `arrange()`, `summarise()`
+    
+    
 3. as funções inversíveis do `tidyr`
     - `gather()` e `spread()`
     - `unite()` e `separate()`
     - `nest()` e `unnest()`
+
+
 4. miscelânea
     - `distinct()` para retirar duplicatas.
     - `case_when()` para reclassificações.
@@ -1150,7 +1291,7 @@ Hoje mexemos com importação transformação de dados
 
 
 
-Na próxima vez, vamos visualizar dados com `ggplot2!`
+Na próxima vez, vamos visualizar dados com `ggplot2!` e ajustar modelinhos
 
 ```{r, echo=FALSE, fig.align='center'}
 knitr::include_graphics("imgs/visualize.jpg")

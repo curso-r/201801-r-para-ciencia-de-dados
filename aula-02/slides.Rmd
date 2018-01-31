@@ -84,7 +84,7 @@ No R
 
 ##
 
-![](arvore.png)
+![](Imagens/arvore.png)
 
 ## Aprendizado Supervisionado
 
@@ -106,13 +106,6 @@ em que:
 - $X$ é uma matriz de covariáveis
 - $\epsilon$ é um componente de aleatoriedade
 
-## Como estimar $f$?
-
-- Árvore de decisão
-- Regressão linear
-- Regressão logística
-- Florestas Aleatórias
-- Redes Neurais
 
 ## Regressão linear
 
@@ -144,40 +137,40 @@ No R
 
 4. Reflita sobre o ajuste do modelo.
 
-## Regressão logística
+<!-- ## Regressão logística -->
 
 
 
-- Probabilidade: Mede a perspectiva da ocorrência de um determinado evento A: $$p_A = \frac{n_A}{N}$$
-  
-  
-- Chance: $$Odds_A = \frac{p_A}{(1-p_A)}$$
-  
-  
-- Razão de chances: $$\frac{Odds_A}{Odds_B} = \frac{[p_A/(1-p_A)]}{[p_B/(1-p_B)]}$$
-  
-  
-## Regressão logística
+<!-- - Probabilidade: Mede a perspectiva da ocorrência de um determinado evento A: $$p_A = \frac{n_A}{N}$$ -->
+
+
+<!-- - Chance: $$Odds_A = \frac{p_A}{(1-p_A)}$$ -->
+
+
+<!-- - Razão de chances: $$\frac{Odds_A}{Odds_B} = \frac{[p_A/(1-p_A)]}{[p_B/(1-p_B)]}$$ -->
+
+
+<!-- ## Regressão logística -->
 
 
 
-- Logito: $$logit = ln(\frac{Odds_A}{Odds_B})$$
+<!-- - Logito: $$logit = ln(\frac{Odds_A}{Odds_B})$$ -->
 
 
-## Regressão logística
+<!-- ## Regressão logística -->
 
-A suposição é de que:
+<!-- A suposição é de que: -->
 
-$$E(y) = \frac{1}{1 + e^{-f(X)}} = \frac{e^{f(X)}}{1 + e^{f(X)}}$$
-
-
-Em que $f(X)$ é uma função da forma $f(X) = \alpha + \beta X$
+<!-- $$E(y) = \frac{1}{1 + e^{-f(X)}} = \frac{e^{f(X)}}{1 + e^{f(X)}}$$ -->
 
 
-- Como $y \sim B(p)$, então $E(y) = p$
+<!-- Em que $f(X)$ é uma função da forma $f(X) = \alpha + \beta X$ -->
 
 
-Logo $$E(y) = p = \frac{e^{f(X)}}{1 + e^{f(X)}}$$ 
+<!-- - Como $y \sim B(p)$, então $E(y) = p$ -->
+
+
+<!-- Logo $$E(y) = p = \frac{e^{f(X)}}{1 + e^{f(X)}}$$  -->
 
 
 ## Regressão logística
@@ -189,14 +182,14 @@ $$=> ln(\frac{p}{1-p}) = f(X) = \alpha + \beta X$$
 Porque?
 
 - Fácil de interpretar: os coeficientes do modelo relacionam-se à chance do evento acontecer
-- A relação linear não precisa de cair em um intervalo ex. [0,1]
+- Retorna a probabilidade de ocorrência do evento avaliado.
 - A deriavada é fácil de ser calculada 
 
 ## Como estimar $\alpha$ e $\beta$?
 
 Os parâmetros são estimados de forma que minimize o erro de classificação:
 
-$$\sum_{i=1}^{n} (y_i - \frac{1}{1 + e^{-f(X_i)}})$$
+$$\sum_{i=1}^{n} (y_i - \frac{1}{1 + e^{-f(X_i)}})^2$$
 
 ## Exemplo 3:
 

@@ -13,6 +13,7 @@ knitr::opts_chunk$set(warning = FALSE)
 ## Motivação
 
 Liberação de alvarás para construção de casas nos EUA.
+Não se preocupe com os códigos ainda. Voltaremos neles mais tarde.
 
 ```{r}
 library(tidyverse)
@@ -36,7 +37,9 @@ ggplot(houston, aes(date, f1units + 1)) +
   geom_line()
 ```
 
-Podemos plotar uma curva para cada mês.
+Observe que existe uma sazonalidade anual.
+
+Podemos plotar uma curva para cada ano.
 
 ```{r}
 ggplot(houston, aes(month, f1units + 1)) +
@@ -68,6 +71,8 @@ houston %>%
   geom_line()
 ```
 
+Comparando com gráfico da série, parece termos explicado grande parte da sazonalidade anual.
+
 ## Aprendizado estatístico
 
 - Supervisionado e não-supervisionado
@@ -79,11 +84,13 @@ Queremos encontrar uma função $f()$ que relaciona a resposta aos preditores, v
 A variável resposta "supervisiona" o aprendizado.
 
 $$
-y \approx f(X)
+Y \approx f(X)
 $$
 
+Outra formulação.
+
 $$
-y = f(X) + \epsilon
+Y = f(X) + \epsilon
 $$
 
 - Exemplos
@@ -91,17 +98,16 @@ $$
 1. Árvores de Decisão
 2. Regressão Linear
 3. Regressão Logística
-4. Florestas Aleatórias
+4. Random forests
 5. Redes Neurais
 
-
+Referência: [Introduction to statistical learning](http://www-bcf.usc.edu/~gareth/ISL/)
 
 ### Não-supervisionado
 
 $$
 X_1, X_2, \dots, X_p
 $$
-
 
 Não vamos abordar nesse curso.
 
@@ -112,22 +118,29 @@ Não vamos abordar nesse curso.
 
 ## Regressão Linear
 
+A nossa $f()$ é uma função linear das variáveis explicativas.
+
 $$
 y \approx \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
 $$
+
+Na formulação com o erro aleatório.
 
 $$
 y = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p + \epsilon
 $$
 
+Na formulação com a esperança.
+
 $$
 E(y) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
 $$
 
+Essas três formulações são equivalentes.
 
 ### Fórmulas
 
-Fórmulas são uma classe de objeto muito utilizados no R, principalmente para modelagem.
+Fórmulas são uma classe de objeto muito utilizados no R, principalmente para modelagem. Elas estabelecem uma relação entre objetos que estão do lado esquerdo com os que estão no lado direito.
 
 ```{r}
 a ~ b
@@ -137,6 +150,10 @@ class(a ~ b)
 
 Usaremos fórmulas para descrever os nossos modelos para as funções do R.
 
+```{r}
+houston_mod <- lm(log(f1units) ~ factor(month), data = houston)
+```
+
 ## Exemplo dos alvarás
 
 $$
@@ -144,7 +161,12 @@ alvaras = f(month) + \epsilon
 $$
 
 $$
-y = \beta_0 + \beta_{jan} X_{jan} + \beta_{fev} X_{fev} \cdots \beta_{dez} X_{dez} + \epsilon
+y = \beta_0 + \beta_{fev} X_{fev} \cdots \beta_{dez} X_{dez} + \epsilon
+$$
+
+$$
+X_{mês} = 1, \text{se a observação pertence ao mês} \\
+X_{mês} = 0, \text{se a observação não pertence ao mês}
 $$
 
 ```{r}
@@ -165,6 +187,7 @@ Referências `modelr`:
 
 - https://github.com/tidyverse/modelr
 - http://r4ds.had.co.nz/model-basics.html
+
 
 ### Exercício
 
@@ -318,11 +341,11 @@ ggplot(dados, aes(x = x, y = y)) +
 
 - **Erro de teste**: é o erro encontrado ao aplicar o modelo a uma base não utilizada no treino.
 
-- **Bias**: o erro introduzido por aproximar um problema da vida real, que pode ser extremamente complicado, por um modelo muito mais simples.
+- **Viés**: o erro introduzido por aproximar um problema da vida real, que pode ser extremamente complicado, por um modelo muito mais simples.
 
 - **Variância**: o quanto as estimativas dos parâmetros mudariam se nós os estimássemos usando um outro conjunto de dados.
 
-Repare que existe um trade off entre a variância e o viés do modelo.
+Repare que existe um trade off entre a variância e o viés do modelo: um modelo muito sofisticado tende a overfittar a amostra e um modelo muito simples tende a ter maior viés.
 
 Calculando o erro para os novos dados
 
@@ -374,6 +397,10 @@ knitr::include_graphics("Imagens/k-fold-cv.png")
 
 Referência: [Introduction to statistical learning](http://www-bcf.usc.edu/~gareth/ISL/)
 
+## Exercício (casa?)
+
+Utilize validação cruzada para avaliar qual o melhor modelo para os dados simulados no exercício anterior.
+
 ## Árvores de decisão (regressão)
 
 - Cria partições no espaço amostral de tal forma que cada observação dentro de uma mesma partição recebe a mesma predição. Essa predição é o valor médio da variável resposta dentro da partição.
@@ -401,7 +428,7 @@ text(arvore_podada)
 
 - Modelar variáveis binárias: 0/1, Sucesso/Fracasso, Sim/Não, Cat1/Cat2
 - É um modelo linear generalizado (extensão da regressão linear)
-- Modelos a probabilidade de Y = 1 dado X.
+- Modela a probabilidade de Y = 1 dado X.
 
 $$
 E(Y) = P(Y = 1 | X) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
@@ -463,7 +490,7 @@ titanic %>%
 Falso negativos: 170
 Falso positivos: 6
 
-Especificidade: 98.6%
+Especificidade: 418/(418+6) = 98.6%
 (True negative rate)
 
 Sensibilidade: 120/290 = 41.4%
@@ -472,21 +499,21 @@ Sensibilidade: 120/290 = 41.4%
 Curva ROC
 
 ```{r}
-source("curva_roc.R")
-library(gridExtra)
-
-titanic_predicao <- titanic %>% 
-  add_predictions(model = titanic_model) %>% 
-  mutate(pred = exp(pred)/(1 + exp(pred))) %>% 
-  na.exclude()
-
-titanic_roc <- calculate_roc(titanic_predicao)
-View(titanic_roc)
-
-min(titanic_roc$cost)
-titanic_roc$threshold[titanic_roc$cost == min(titanic_roc$cost)]
-
-plot_roc(titanic_roc, threshold = 0.42)
+  source("curva_roc.R")
+  library(gridExtra)
+  
+  titanic_predicao <- titanic %>% 
+    add_predictions(model = titanic_model) %>% 
+    mutate(pred = exp(pred)/(1 + exp(pred))) %>% 
+    na.exclude()
+  
+  titanic_roc <- calculate_roc(titanic_predicao)
+  View(titanic_roc)
+  
+  min(titanic_roc$cost)
+  titanic_roc$threshold[titanic_roc$cost == min(titanic_roc$cost)]
+  
+  plot_roc(titanic_roc, threshold = 0.42)
 
 ```
 

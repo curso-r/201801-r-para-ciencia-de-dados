@@ -499,21 +499,21 @@ Sensibilidade: 120/290 = 41.4%
 Curva ROC
 
 ```{r}
-  source("curva_roc.R")
-  library(gridExtra)
-  
-  titanic_predicao <- titanic %>% 
-    add_predictions(model = titanic_model) %>% 
-    mutate(pred = exp(pred)/(1 + exp(pred))) %>% 
-    na.exclude()
-  
-  titanic_roc <- calculate_roc(titanic_predicao)
-  View(titanic_roc)
-  
-  min(titanic_roc$cost)
-  titanic_roc$threshold[titanic_roc$cost == min(titanic_roc$cost)]
-  
-  plot_roc(titanic_roc, threshold = 0.42)
+source("curva_roc.R")
+library(gridExtra)
+
+titanic_predicao <- titanic %>% 
+  add_predictions(model = titanic_model) %>% 
+  mutate(pred = exp(pred)/(1 + exp(pred))) %>% 
+  na.exclude()
+
+titanic_roc <- calculate_roc(titanic_predicao)
+View(titanic_roc)
+
+min(titanic_roc$cost)
+titanic_roc$threshold[titanic_roc$cost == min(titanic_roc$cost)]
+
+plot_roc(titanic_roc, threshold = 0.42)
 
 ```
 
@@ -531,6 +531,64 @@ Curva ROC
 2. Compare os resultados com o modelo logístico.
 
 3. Use validação cruzada para determinar o tamanho da árvore.
+
+## Resolução 
+
+```{r}
+library(tree)
+library(tidyverse)
+library(modelr)
+
+# 1
+
+titanic <- read_csv('https://github.com/curso-r/pu.modelos/raw/master/data/titanic-train.csv')
+titanic_tree <- tree(Survived ~ factor(Pclass) + Sex + Age, data = titanic)
+
+# 2
+
+plot(titanic_tree)
+text(titanic_tree)
+
+titanic_model <- glm(Survived ~ factor(Pclass) + Sex + Age, 
+                     data = titanic, 
+                     family = binomial(link = 'logit'))
+
+summary(titanic_model)
+
+# 3
+
+calcula_erro <- function(arvore, test, corte = 0.7) {
+  
+  test <- test %>% 
+    add_predictions(model = arvore) %>% 
+    mutate(survived_pred = ifelse(pred < 0.5, 1, 0),
+           acerto = ifelse(survived_pred == Survived, TRUE, FALSE))
+  
+  return(sum(test$acerto)/length(test$acerto))
+  
+}
+
+poda_arvore <- function(arvore, tamanho) {
+  
+  prune.tree(arvore, best = tamanho)
+  
+}
+
+titanic_train <- titanic %>%
+  sample_frac(size = 0.7)
+  
+titanic_valid <- titanic %>%
+  filter(!PassengerId %in% titanic_train$PassengerId)
+
+titanic_tree_train <- tree(Survived ~ factor(Pclass) + Sex + Age, data = titanic)
+
+tibble(tamanho = 2:6) %>%
+  mutate(arvore = map(tamanho, poda_arvore, arvore = titanic_tree_train),
+         acerto = map(arvore, calcula_erro, test = titanic_valid)) %>% 
+  unnest(acerto)
+
+```
+
 
 
 ## Misc

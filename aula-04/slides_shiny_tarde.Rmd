@@ -62,20 +62,12 @@ knitr::include_graphics("https://raw.githubusercontent.com/hadley/r4ds/master/di
 
 ## Template
 
-1. Usar o template:
-
 ![](Imagens/Img_2.jpg)
 
----
 
-## Template
+* **ui** - constrói a interface do usuário, isto é, a **arquitetura** da página.  
 
-<br/>
-<br/>
-
-* *Ui.R* - Constrói a User Inteface, isto é, a **arquitetura** da página.  
-
-* *Server.R* - Constrói as reações, interações, dinamismo.  
+* **server** - constrói os objetos apresentados ao usuário.
 
 ---
 
@@ -87,9 +79,16 @@ Vamos para o R!
  
 ## Inputs e Outputs
 
+<br>
+
 **Inputs** são widgets que possibilitam a interação do usuário com o App.  
 
-**Outputs** é a resposta que o app dará às ações exercidas pelo usuário por meio dos **inputs**.
+**Outputs** são a resposta do app às ações exercidas pelo usuário.
+
+<br>
+<br>
+
+Um app pode ter vários inputs e outputs.
 
 ---
 
@@ -131,7 +130,10 @@ Vamos para o R!
 
 ## Server.R
 
-Para a construção do Server.R são necessárias apenas 3 regras:
+<br>
+<br>
+
+Para a construção da função `server()`, precisamos seguir 3 regras.
 
 ---
 
@@ -175,7 +177,7 @@ Todo aplicativo Shiny é alimentado por um computador rodando R.
 
 ## Compartilhando seu app
   
-Será necessário:
+Dentro do server:
 
 1. Um diretório contendo tudo o que seu app utiliza (datasets, imagens etc).
 
@@ -183,9 +185,11 @@ Será necessário:
 
 Opções:
 
-* Servidor comum
-* [shinyapps.io](http://www.shinyapps.io/)
-* Construa seu próprio Shiny Server
+* [Shiny server](https://www.rstudio.com/products/shiny/shiny-server/): programa backend gratuito que monta um servidor web em linux feito para hospedar aplicativos em Shiny.
+
+* [Shiny Server Pro](https://www.rstudio.com/products/shiny-server-pro/): disponibiliza ferramentas de segurança, performance, gerencialmente e suporte.
+
+* [shinyapps.io](http://www.shinyapps.io/): sistema do RStudio para a hospedagem de aplicativos em Shiny.
 
 ---
 
@@ -202,7 +206,7 @@ Vamos para o R!
 
 1. Crie um app que tenha como *inputs* duas colunas **quaisquer** do dataset **iris** e devolva como *output* um gráfico ggplot de dispersão entre estas colunas escolhidas.
 
-2. Crie um outro *input* que dê a opção do usuário vizualizar a reta de regressão linear simples formada entre as variáveis (colunas) escolhidas. (Dica: função *geom_smooth()* de ggplot2).
+2. Crie um outro *input* que dê a opção do usuário visualizar a reta de regressão linear simples formada entre as variáveis (colunas) escolhidas. (Dica: função *geom_smooth()* de ggplot2).
 
 
 

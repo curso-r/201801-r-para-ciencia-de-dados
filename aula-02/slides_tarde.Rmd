@@ -1,0 +1,610 @@
+---
+title: "Modelagem"
+author: "William Amorim"
+date: "01/2018"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+knitr::opts_chunk$set(warning = FALSE)
+```
+
+## Motivação
+
+Liberação de alvarás para construção de casas nos EUA.
+Não se preocupe com os códigos ainda. Voltaremos neles mais tarde.
+
+```{r}
+library(tidyverse)
+library(stringr)
+
+alvaras <- read_rds("../_dados/permits_big.rds")
+
+alvaras %>% 
+  ggplot(aes(date, f1units)) +
+  geom_line(aes(group = area), alpha = 1/8) +
+  scale_y_log10() +
+  geom_smooth(se = FALSE)
+```
+
+Vamos pegar apenas uma região: Houston
+
+```{r}
+houston <- alvaras %>% filter(str_detect(area, "Houston"))
+
+ggplot(houston, aes(date, f1units + 1)) +
+  geom_line()
+```
+
+Observe que existe uma sazonalidade anual.
+
+Podemos plotar uma curva para cada ano.
+
+```{r}
+ggplot(houston, aes(month, f1units + 1)) +
+  geom_line(aes(group = year)) +
+  geom_smooth(se = FALSE) + 
+  scale_y_log10()
+```
+
+Vamos ajustar um modelo linear para avaliar o efeito de mês.
+
+```{r}
+houston_mod <- lm(log(f1units) ~ factor(month), data = houston)
+
+library(modelr)
+
+houston %>%
+  add_predictions(houston_mod) %>%
+  ggplot(aes(date, pred)) +
+  geom_line()
+```
+
+Vamos visualizar agora os resíduos.
+
+```{r}
+houston %>%
+  add_residuals(houston_mod) %>%
+  ggplot(aes(date, resid)) +
+  geom_hline(yintercept = 0, colour = "white", size = 3) +
+  geom_line()
+```
+
+Comparando com gráfico da série, parece termos explicado grande parte da sazonalidade anual.
+
+## Aprendizado estatístico
+
+- Supervisionado e não-supervisionado
+
+### Supervisionado
+
+Queremos encontrar uma função $f()$ que relaciona a resposta aos preditores, visando predizer precisamente a resposta (predição) ou entender melhor a relação entre a resposta e os preditores (inferência).
+
+A variável resposta "supervisiona" o aprendizado.
+
+$$
+Y \approx f(X)
+$$
+
+Outra formulação.
+
+$$
+Y = f(X) + \epsilon
+$$
+
+- Exemplos
+
+1. Árvores de Decisão
+2. Regressão Linear
+3. Regressão Logística
+4. Random forests
+5. Redes Neurais
+
+Referência: [Introduction to statistical learning](http://www-bcf.usc.edu/~gareth/ISL/)
+
+### Não-supervisionado
+
+$$
+X_1, X_2, \dots, X_p
+$$
+
+Não vamos abordar nesse curso.
+
+- Exemplos
+
+1. Análise de cluster
+2. PCA
+
+## Regressão Linear
+
+A nossa $f()$ é uma função linear das variáveis explicativas.
+
+$$
+y \approx \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
+$$
+
+Na formulação com o erro aleatório.
+
+$$
+y = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p + \epsilon
+$$
+
+Na formulação com a esperança.
+
+$$
+E(y) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
+$$
+
+Essas três formulações são equivalentes.
+
+### Fórmulas
+
+Fórmulas são uma classe de objeto muito utilizados no R, principalmente para modelagem. Elas estabelecem uma relação entre objetos que estão do lado esquerdo com os que estão no lado direito.
+
+```{r}
+a ~ b
+
+class(a ~ b)
+```
+
+Usaremos fórmulas para descrever os nossos modelos para as funções do R.
+
+```{r}
+houston_mod <- lm(log(f1units) ~ factor(month), data = houston)
+```
+
+## Exemplo dos alvarás
+
+$$
+alvaras = f(month) + \epsilon
+$$
+
+$$
+y = \beta_0 + \beta_{fev} X_{fev} \cdots \beta_{dez} X_{dez} + \epsilon
+$$
+
+$$
+X_{mês} = 1, \text{se a observação pertence ao mês} \\
+X_{mês} = 0, \text{se a observação não pertence ao mês}
+$$
+
+```{r}
+houston_mod <- lm(log(f1units) ~ factor(month), data = houston)
+
+model.matrix()
+
+houston_mod
+summary(houston_mod)
+
+houston %>%
+  add_predictions(houston_mod) %>%
+  ggplot(aes(date, pred)) +
+  geom_line()
+```
+
+Referências `modelr`:
+
+- https://github.com/tidyverse/modelr
+- http://r4ds.had.co.nz/model-basics.html
+
+
+### Exercício
+
+1) Gere uma amostra aleatória de tamanho 10 de pares (X,Y) com a seguinte relação:
+
+$$
+Y = 2 + 3X + X^2 + \epsilon, \quad X \sim U(0, 1), \quad \epsilon \sim N(0, 0.3)
+$$
+
+
+
+
+```{r}
+# Como vamos gerar números aleatórios, precisamos setar uma semente para que nossos resultados possam ser reprodutíveis.
+
+set.seed(31012018)
+
+# Gerar uma amostra de tamanho 10 da distribuição uniforme. Para isso, utilize a função runif().
+
+x <- runif()
+
+# Gerar uma amostra de tamanho 10 da distribuição normal com média 0 e variância 0.3. Para isso, utilize a função rnorm().
+
+e <- rnorm()
+
+# Crie a variável Y conforme a relação apresentada acima.
+
+y <- ...
+
+
+```
+
+2) Crie o data.frame "dados" com as variáveis y e x.
+
+```{r}
+# Utilize a funçao data.frame() ou tibble(). Nomeie as colunas com "x" e "y".
+
+dados <- ...
+```
+
+3) Ajuste um gráfico de dispersão de Y por X.
+
+```{r}
+ggplot() +
+  geom_point()
+```
+
+4) Ajuste modelos de regressão polinomiais de grau 1 a 9 aos dados. Um modelo polinomial de grau p é dado por:
+
+$$
+Y = \beta_0 + \beta_1 X_1 + \beta_2 X_2^2 + \cdots \beta_p X_p^p + \epsilon
+$$
+```{r}
+# Dica: utilize a função poly(x, p) para criar modelos polinomiais.
+
+modelo1 <-  lm()
+modelo2 <- lm(y ~ poly(x, 2), data = dados)
+modelo3 <- lm()
+modelo4 <- lm()
+modelo5 <- lm()
+modelo6 <- lm()
+modelo7 <- lm()
+modelo8 <- lm()
+modelo9 <- lm()
+```
+
+5) Considere o erro de ajuste dado por
+
+$$
+EQM = \frac{1}{n}\sum_{i=1}^n(y - \hat{y})^2.
+$$
+
+
+
+Qual modelo você acredita ter o menor EQM? Rode o código abaixo e verifique.
+
+```{r}
+erro_modelo1 <- mean((dados$y - predict(modelo, newdata = dados))^2)
+erro_modelo2 <- mean((dados$y - predict(modelo2, newdata = dados))^2)
+erro_modelo3 <- mean((dados$y - predict(modelo3, newdata = dados))^2)
+erro_modelo4 <- mean((dados$y - predict(modelo4, newdata = dados))^2)
+erro_modelo5 <- mean((dados$y - predict(modelo5, newdata = dados))^2)
+erro_modelo6 <- mean((dados$y - predict(modelo6, newdata = dados))^2)
+erro_modelo7 <- mean((dados$y - predict(modelo7, newdata = dados))^2)
+erro_modelo8 <- mean((dados$y - predict(modelo8, newdata = dados))^2)
+erro_modelo9 <- mean((dados$y - predict(modelo9, newdata = dados))^2)
+
+erro_ajuste <- c(erro_modelo1 = erro_modelo1,
+erro_modelo2 = erro_modelo2,
+erro_modelo3 = erro_modelo3,
+erro_modelo4 = erro_modelo4,
+erro_modelo5 = erro_modelo5,
+erro_modelo6 = erro_modelo6,
+erro_modelo7 = erro_modelo7,
+erro_modelo8 = erro_modelo8,
+erro_modelo9 = erro_modelo9) %>% round(3)
+
+erro_ajuste
+```
+
+## Overfitting
+
+Seguindo o exercício anterior, vamos avaliar a curva ajustada de alguns modelos.
+
+```{r}
+ggplot(dados, aes(x = x, y = y)) + geom_point() + 
+  geom_smooth(formula = y ~ x, colour = "red", se = FALSE, method = 'lm')
+
+ggplot(dados, aes(x = x, y = y)) + geom_point() + 
+  geom_smooth(formula = y ~ poly(x, 2), colour = "orange", se = FALSE, method = 'lm')
+
+ggplot(dados, aes(x = x, y = y)) + geom_point() + 
+  geom_smooth(formula = y ~ poly(x, 3), colour = "blue", se = FALSE, method = 'lm')
+
+ggplot(dados, aes(x = x, y = y)) + geom_point() + 
+  geom_smooth(formula = y ~ poly(x, 6), colour = "green", se = FALSE, method = 'lm')
+
+
+ggplot(dados, aes(x = x, y = y)) + geom_point() + 
+  geom_smooth(formula = y ~ poly(x, 9), colour = "brown", se = FALSE, method = 'lm')
+```
+
+Vamos gerar mais pontos e analisar esses modelos.
+
+```{r}
+dados2 <- tibble(x = runif(10),
+                   y = 2 + 3*x + x^2 +  rnorm(10, 0, 0.3))
+
+ggplot(dados, aes(x = x, y = y)) + 
+  geom_point() +
+  geom_point(data = dados2, aes(x = x, y = y)) +
+  geom_smooth(formula = y ~ x, colour = "red", se = FALSE, method = 'lm')
+
+ggplot(dados, aes(x = x, y = y)) + 
+  geom_point() +
+  geom_point(data = dados2, aes(x = x, y = y)) +
+  geom_smooth(formula = y ~ poly(x, 2), colour = "orange", se = FALSE, method = 'lm')
+
+ggplot(dados, aes(x = x, y = y)) + 
+  geom_point() +
+  geom_point(data = dados2, aes(x = x, y = y)) +
+  geom_smooth(formula = y ~ poly(x, 6), colour = "blue", se = FALSE, method = 'lm')
+
+ggplot(dados, aes(x = x, y = y)) + 
+  geom_point() +
+  geom_point(data = dados2, aes(x = x, y = y)) +
+  geom_smooth(formula = y ~ poly(x, 9), colour = "blue", se = FALSE, method = 'lm')
+```
+
+- **Erro de treino**: é o erro encontrado ao aplicar o modelo na própria base utilizada para treiná-lo.
+
+- **Erro de teste**: é o erro encontrado ao aplicar o modelo a uma base não utilizada no treino.
+
+- **Viés**: o erro introduzido por aproximar um problema da vida real, que pode ser extremamente complicado, por um modelo muito mais simples.
+
+- **Variância**: o quanto as estimativas dos parâmetros mudariam se nós os estimássemos usando um outro conjunto de dados.
+
+Repare que existe um trade off entre a variância e o viés do modelo: um modelo muito sofisticado tende a overfittar a amostra e um modelo muito simples tende a ter maior viés.
+
+Calculando o erro para os novos dados
+
+```{r}
+erro_modelo1 <- mean((dados2$y - predict(modelo, newdata = dados2))^2)
+erro_modelo2 <- mean((dados2$y - predict(modelo2, newdata = dados2))^2)
+erro_modelo3 <- mean((dados2$y - predict(modelo3, newdata = dados2))^2)
+erro_modelo4 <- mean((dados2$y - predict(modelo4, newdata = dados2))^2)
+erro_modelo5 <- mean((dados2$y - predict(modelo5, newdata = dados2))^2)
+erro_modelo6 <- mean((dados2$y - predict(modelo6, newdata = dados2))^2)
+erro_modelo7 <- mean((dados2$y - predict(modelo7, newdata = dados2))^2)
+erro_modelo8 <- mean((dados2$y - predict(modelo8, newdata = dados2))^2)
+erro_modelo9 <- mean((dados2$y - predict(modelo9, newdata = dados2))^2)
+
+erro_ajuste <- c(erro_modelo1 = erro_modelo1,
+erro_modelo2 = erro_modelo2,
+erro_modelo3 = erro_modelo3,
+erro_modelo4 = erro_modelo4,
+erro_modelo5 = erro_modelo5,
+erro_modelo6 = erro_modelo6,
+erro_modelo7 = erro_modelo7,
+erro_modelo8 = erro_modelo8,
+erro_modelo9 = erro_modelo9) %>% round(3)
+
+erro_ajuste
+```
+
+**Validação cruzada**: usar uma porção dos dados, que não foi utilizada para no treino, para avaliar o erro de teste.
+
+- Validation set
+
+```{r}
+knitr::include_graphics("Imagens/validation-set.png")
+```
+
+
+- LOOCV
+
+```{r}
+knitr::include_graphics("Imagens/loocv.png")
+```
+
+- k-fold Cross Validation
+
+```{r}
+knitr::include_graphics("Imagens/k-fold-cv.png")
+```
+
+
+Referência: [Introduction to statistical learning](http://www-bcf.usc.edu/~gareth/ISL/)
+
+## Exercício (casa?)
+
+Utilize validação cruzada para avaliar qual o melhor modelo para os dados simulados no exercício anterior.
+
+## Árvores de decisão (regressão)
+
+- Cria partições no espaço amostral de tal forma que cada observação dentro de uma mesma partição recebe a mesma predição. Essa predição é o valor médio da variável resposta dentro da partição.
+
+- Principal vantagem: interpretação.
+
+- Principal desvantagem: não é uma abordagem competitiva quando comparada com técnicas mais refinadas.
+
+
+```{r}
+library(tree)
+
+hitters <- ISLR::Hitters
+
+arvore <- tree(log(Salary) ~ Years + Hits, data = hitters)
+plot(arvore)
+text(arvore)
+
+arvore_podada <- prune.tree(arvore, best = 3)
+plot(arvore_podada)
+text(arvore_podada)
+```
+
+## Regressão logística
+
+- Modelar variáveis binárias: 0/1, Sucesso/Fracasso, Sim/Não, Cat1/Cat2
+- É um modelo linear generalizado (extensão da regressão linear)
+- Modela a probabilidade de Y = 1 dado X.
+
+$$
+E(Y) = P(Y = 1 | X) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
+$$
+
+
+
+
+Como 0 < P < 1, usamos a função logística
+
+$$
+P(Y = 1 | X) = \frac{e^{\beta_0 + \beta_1 X_1 + \cdots \beta_p X_p}}{1 + e^{\beta_0 + \beta_1 X_1 + \cdots \beta_p X_p}}
+$$
+
+
+
+que é equivalente a
+
+$$
+\log\left(\frac{P(Y = 1 | X)}{1 - P(Y = 1 | X)}\right) = \beta_0 + \beta_1 X_1 + \cdots \beta_p X_p
+$$
+
+
+
+O lado esquerdo da expressão é chamado de logito.
+
+Referências
+
+- [Livro do Gilberto A. Paula](https://www.ime.usp.br/~giapaula/texto_2013.pdf)
+
+- [Introduction to statistical learning](http://www-bcf.usc.edu/~gareth/ISL/)
+
+```{r}
+titanic <- read_csv('https://github.com/curso-r/pu.modelos/raw/master/data/titanic-train.csv')
+
+titanic_model <- glm(Survived ~ factor(Pclass) + Sex + Age, 
+                     data = titanic, 
+                     family = binomial(link = 'logit'))
+summary(titanic_model)
+
+titanic %>% 
+  add_predictions(model = titanic_model) %>% 
+  mutate(pred = exp(pred)/(1 + exp(pred))) %>% 
+  ggplot() +
+  geom_boxplot(aes(x = factor(Survived), y = pred))
+```
+
+```{r}
+corte <- 0.8
+
+titanic %>% 
+  add_predictions(model = titanic_model) %>% 
+  mutate(pred = exp(pred)/(1 + exp(pred))) %>%
+  mutate(surv_pred = ifelse(pred < corte, 0, 1)) %>% 
+  select(Survived, surv_pred) %>% 
+  table
+```
+
+Falso negativos: 170
+Falso positivos: 6
+
+Especificidade: 418/(418+6) = 98.6%
+(True negative rate)
+
+Sensibilidade: 120/290 = 41.4%
+(True positive rate, recall, probability of detection)
+
+Curva ROC
+
+```{r}
+source("curva_roc.R")
+library(gridExtra)
+
+titanic_predicao <- titanic %>% 
+  add_predictions(model = titanic_model) %>% 
+  mutate(pred = exp(pred)/(1 + exp(pred))) %>% 
+  na.exclude()
+
+titanic_roc <- calculate_roc(titanic_predicao)
+View(titanic_roc)
+
+min(titanic_roc$cost)
+titanic_roc$threshold[titanic_roc$cost == min(titanic_roc$cost)]
+
+plot_roc(titanic_roc, threshold = 0.42)
+
+```
+
+
+## Árvores de decisão (classificação)
+
+- Árvores de decisão também podem ser utilizadas para classificação.
+
+- A ideia é análoga ao caso para regressão. Aqui escolhemos a categoria mais frequente dentro de cada partição do espaço amostral.
+
+## Exercício
+
+1. Use árvores de decisão para modelar o número de sobreviventes do Titanic.
+
+2. Compare os resultados com o modelo logístico.
+
+3. Use validação cruzada para determinar o tamanho da árvore.
+
+## Resolução 
+
+```{r}
+library(tree)
+library(tidyverse)
+library(modelr)
+
+# 1
+
+titanic <- read_csv('https://github.com/curso-r/pu.modelos/raw/master/data/titanic-train.csv')
+titanic_tree <- tree(Survived ~ factor(Pclass) + Sex + Age, data = titanic)
+
+# 2
+
+plot(titanic_tree)
+text(titanic_tree)
+
+titanic_model <- glm(Survived ~ factor(Pclass) + Sex + Age, 
+                     data = titanic, 
+                     family = binomial(link = 'logit'))
+
+summary(titanic_model)
+
+# 3
+
+calcula_erro <- function(arvore, test, corte = 0.7) {
+  
+  test <- test %>% 
+    add_predictions(model = arvore) %>% 
+    mutate(survived_pred = ifelse(pred < 0.5, 1, 0),
+           acerto = ifelse(survived_pred == Survived, TRUE, FALSE))
+  
+  return(sum(test$acerto)/length(test$acerto))
+  
+}
+
+poda_arvore <- function(arvore, tamanho) {
+  
+  prune.tree(arvore, best = tamanho)
+  
+}
+
+titanic_train <- titanic %>%
+  sample_frac(size = 0.7)
+  
+titanic_valid <- titanic %>%
+  filter(!PassengerId %in% titanic_train$PassengerId)
+
+titanic_tree_train <- tree(Survived ~ factor(Pclass) + Sex + Age, data = titanic)
+
+tibble(tamanho = 2:6) %>%
+  mutate(arvore = map(tamanho, poda_arvore, arvore = titanic_tree_train),
+         acerto = map(arvore, calcula_erro, test = titanic_valid)) %>% 
+  unnest(acerto)
+
+```
+
+
+
+## Misc
+
+- glmnet (regularização)
+
+https://web.stanford.edu/~hastie/glmnet/glmnet_alpha.html
+
+
+- caret (bazuca para modelagem)
+
+http://caret.r-forge.r-project.org/
+
+
+- keras (traz o framework do tensorflow para R)
+
+https://keras.rstudio.com/
+http://curso-r.com/blog/
+http://curso-r.com/blog/2017/07/29/2017-07-29-segundo-menor-dl/

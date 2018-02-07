@@ -1,0 +1,212 @@
+---
+title: "Shiny"
+author: "Curso-R"
+date: "2018/02/05"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+# Ciclo da ciência de dados
+
+<br>
+<br>
+<br>
+
+```{r, fig.align='center'}
+knitr::include_graphics("https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/data-science.png")
+```
+
+---
+
+## O que é o Shiny?
+
+- Sistema para desenvolvimento de aplicações web usando o R.
+
+- Um pacote de R (`shiny`).
+
+- Um servidor web (`shiny server`).
+
+---
+
+## O que o Shiny não é?
+
+- O Shiny **não** é uma página web.
+
+- O Shiny **não** é um substituto para sistemas mais gerais, como Ruby on Rails e Django.
+
+- O Shiny **não** é uma ferramenta gerencial, como o Tableau.
+---
+
+## Tutorial completo do RStudio sobre Shiny
+
+- [Tutorial](https://shiny.rstudio.com/tutorial/)
+
+- [Exemplos](https://shiny.rstudio.com/gallery/)
+
+---
+
+## Como funciona?
+
+![](Imagens/Img_1.jpg)
+---
+
+## Template
+
+![](Imagens/Img_2.jpg)
+
+
+* **ui** - constrói a interface do usuário, isto é, a **arquitetura** da página.  
+
+* **server** - constrói os objetos apresentados ao usuário.
+
+---
+
+## Exemplo 1
+
+Vamos para o R!
+
+---
+ 
+## Inputs e Outputs
+
+<br>
+
+**Inputs** são widgets que possibilitam a interação do usuário com o App.  
+
+**Outputs** são a resposta do app às ações exercidas pelo usuário.
+
+<br>
+<br>
+
+Um app pode ter vários inputs e outputs.
+
+---
+
+## Funções inputs
+
+![](Imagens/Img_3.jpg)
+---
+
+## Sintaxe
+
+![](Imagens/Img_4.jpg)
+
+---
+
+## Funções Outputs
+
+![](Imagens/Img_5.jpg)
+
+---
+
+## Sintaxe
+
+![](Imagens/Img_6.jpg)
+
+---
+
+## Recaptulando
+
+
+![](Imagens/Img_7.jpg)
+
+---
+
+## Exemplo 2
+
+Vamos para o R!
+
+---
+
+## Server.R
+
+<br>
+<br>
+
+Para a construção da função `server()`, precisamos seguir 3 regras.
+
+---
+
+## Regras da função server()
+
+![](Imagens/Img_8.jpg)
+
+---
+
+## Funções render*()
+
+![](Imagens/Img_9.jpg)
+
+---
+
+## Sintaxe
+
+![](Imagens/Img_10.jpg)
+
+---
+
+## Regras da função server()
+
+![](Imagens/Img_11.jpg)
+
+---
+
+## Recapitulando
+
+![](Imagens/Img_12.jpg)
+
+---
+
+## Compartilhando seu app
+
+Todo aplicativo Shiny é alimentado por um computador rodando R.
+
+![](Imagens/Img_1.jpg)
+
+---
+
+## Compartilhando seu app
+  
+Dentro do server:
+
+1. Um diretório contendo tudo o que seu app utiliza (datasets, imagens etc).
+
+2. O código em R que gera seu app (app.R).
+
+Opções:
+
+* [Shiny server](https://www.rstudio.com/products/shiny/shiny-server/): programa backend gratuito que monta um servidor web em linux feito para hospedar aplicativos em Shiny.
+
+* [Shiny Server Pro](https://www.rstudio.com/products/shiny-server-pro/): disponibiliza ferramentas de segurança, performance, gerencialmente e suporte.
+
+* [shinyapps.io](http://www.shinyapps.io/): sistema do RStudio para a hospedagem de aplicativos em Shiny.
+
+---
+
+## Exemplo 3 e 4: DT e plotly
+
+Vamos para o R!
+
+---
+
+## Exercício
+
+* Utilize o dataset `iris`.
+* Utilize o pacote `ggplot2` para criação dos gráficos.
+
+1. Crie um app que tenha como *inputs* duas colunas **quaisquer** do dataset **iris** e devolva como *output* um gráfico ggplot de dispersão entre estas colunas escolhidas.
+
+2. Crie um outro *input* que dê a opção do usuário visualizar a reta de regressão linear simples formada entre as variáveis (colunas) escolhidas. (Dica: função *geom_smooth()* de ggplot2).
+
+
+

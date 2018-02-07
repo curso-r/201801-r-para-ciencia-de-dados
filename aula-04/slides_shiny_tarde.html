@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Shiny</title>
+    <meta charset="utf-8">
+    <meta name="author" content="Curso-R" />
+    <link href="libs/remark-css-0.0.1/example.css" rel="stylesheet" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Shiny
+### Curso-R
+### 2018/02/05
+
+---
+
+
+
+
+
+# Ciclo da ciência de dados
+
+&lt;br&gt;
+&lt;br&gt;
+&lt;br&gt;
+
+&lt;img src="https://raw.githubusercontent.com/hadley/r4ds/master/diagrams/data-science.png" style="display: block; margin: auto;" /&gt;
+
+---
+
+## O que é o Shiny?
+
+- Sistema para desenvolvimento de aplicações web usando o R.
+
+- Um pacote de R (`shiny`).
+
+- Um servidor web (`shiny server`).
+
+---
+
+## O que o Shiny não é?
+
+- O Shiny **não** é uma página web.
+
+- O Shiny **não** é um substituto para sistemas mais gerais, como Ruby on Rails e Django.
+
+- O Shiny **não** é uma ferramenta gerencial, como o Tableau.
+---
+
+## Tutorial completo do RStudio sobre Shiny
+
+- [Tutorial](https://shiny.rstudio.com/tutorial/)
+
+- [Exemplos](https://shiny.rstudio.com/gallery/)
+
+---
+
+## Como funciona?
+
+![](Imagens/Img_1.jpg)
+---
+
+## Template
+
+![](Imagens/Img_2.jpg)
+
+
+* **ui** - constrói a interface do usuário, isto é, a **arquitetura** da página.  
+
+* **server** - constrói os objetos apresentados ao usuário.
+
+---
+
+## Exemplo 1
+
+Vamos para o R!
+
+---
+ 
+## Inputs e Outputs
+
+&lt;br&gt;
+
+**Inputs** são widgets que possibilitam a interação do usuário com o App.  
+
+**Outputs** são a resposta do app às ações exercidas pelo usuário.
+
+&lt;br&gt;
+&lt;br&gt;
+
+Um app pode ter vários inputs e outputs.
+
+---
+
+## Funções inputs
+
+![](Imagens/Img_3.jpg)
+---
+
+## Sintaxe
+
+![](Imagens/Img_4.jpg)
+
+---
+
+## Funções Outputs
+
+![](Imagens/Img_5.jpg)
+
+---
+
+## Sintaxe
+
+![](Imagens/Img_6.jpg)
+
+---
+
+## Recaptulando
+
+
+![](Imagens/Img_7.jpg)
+
+---
+
+## Exemplo 2
+
+Vamos para o R!
+
+---
+
+## Server.R
+
+&lt;br&gt;
+&lt;br&gt;
+
+Para a construção da função `server()`, precisamos seguir 3 regras.
+
+---
+
+## Regras da função server()
+
+![](Imagens/Img_8.jpg)
+
+---
+
+## Funções render*()
+
+![](Imagens/Img_9.jpg)
+
+---
+
+## Sintaxe
+
+![](Imagens/Img_10.jpg)
+
+---
+
+## Regras da função server()
+
+![](Imagens/Img_11.jpg)
+
+---
+
+## Recapitulando
+
+![](Imagens/Img_12.jpg)
+
+---
+
+## Compartilhando seu app
+
+Todo aplicativo Shiny é alimentado por um computador rodando R.
+
+![](Imagens/Img_1.jpg)
+
+---
+
+## Compartilhando seu app
+  
+Dentro do server:
+
+1. Um diretório contendo tudo o que seu app utiliza (datasets, imagens etc).
+
+2. O código em R que gera seu app (app.R).
+
+Opções:
+
+* [Shiny server](https://www.rstudio.com/products/shiny/shiny-server/): programa backend gratuito que monta um servidor web em linux feito para hospedar aplicativos em Shiny.
+
+* [Shiny Server Pro](https://www.rstudio.com/products/shiny-server-pro/): disponibiliza ferramentas de segurança, performance, gerencialmente e suporte.
+
+* [shinyapps.io](http://www.shinyapps.io/): sistema do RStudio para a hospedagem de aplicativos em Shiny.
+
+---
+
+## Exemplo 3 e 4: DT e plotly
+
+Vamos para o R!
+
+---
+
+## Exercício
+
+* Utilize o dataset `iris`.
+* Utilize o pacote `ggplot2` para criação dos gráficos.
+
+1. Crie um app que tenha como *inputs* duas colunas **quaisquer** do dataset **iris** e devolva como *output* um gráfico ggplot de dispersão entre estas colunas escolhidas.
+
+2. Crie um outro *input* que dê a opção do usuário visualizar a reta de regressão linear simples formada entre as variáveis (colunas) escolhidas. (Dica: função *geom_smooth()* de ggplot2).
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {window.dispatchEvent(new Event('resize'));});</script>
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    skipTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+  }
+});
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://cdn.bootcss.com/mathjax/2.7.1/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

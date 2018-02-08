@@ -1,0 +1,389 @@
+---
+title: "Instacart"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(tidyverse)
+
+orders <- read_csv("data/orders.csv")
+order_products <- read_csv("data/order_products.csv")
+products <- read_csv("data/products.csv")
+aisles <- read_csv("data/aisles.csv")
+departments <- read_csv("data/departments.csv")
+```
+
+Visão Geral
+========================
+
+Row
+-----------------------------------------------------------------------
+
+### Quantidade total de usuários {.value-box}
+
+```{r}
+valueBox(n_distinct(orders$user_id), icon = "fa-users")
+```
+
+### Quantidade total de compras {.value-box}
+
+```{r}
+valueBox(n_distinct(orders$order_id), icon = "fa-shopping-cart")
+```
+
+### Quantidade média de compras por usuário
+
+```{r}
+orders %>%
+  group_by(user_id) %>%
+  summarise(n = n_distinct(order_id)) %>%
+  with(n) %>%
+  mean() %>%
+  round(2) %>%
+  valueBox(icon = "fa-star")
+```
+
+### Quantidade de produtos distintos
+
+```{r}
+orders %>%
+  left_join(order_products, by = "order_id") %>%
+  summarise(n = n_distinct(product_id)) %>%
+  with(n) %>%
+  valueBox(icon = "fa-product-hunt")
+```
+
+Row
+----------------------------
+
+### Distribuição da quantidade de compras
+
+```{r}
+orders %>%
+  group_by(user_id) %>%
+  summarise(n = n_distinct(order_id)) %>%
+  ggplot(aes(x = n)) + 
+  geom_histogram(bins = 30, colour = "white", fill = "darkblue") +
+  labs(x = "Quantidade de compras", y = "Quantidade de clientes")
+```
+
+### Distribuição da quantidade de produtos por compra
+
+```{r}
+orders %>%
+  left_join(order_products, by = "order_id") %>%
+  group_by(user_id, order_id) %>%
+  summarise(n = n_distinct(product_id)) %>%
+  ggplot(aes(x = n)) + 
+  geom_histogram(bins = 30, colour = "white",  fill = "darkblue") +
+  labs(x = "Quantidade de produtos", y = "Quantidade de compras")
+```
+
+Usuários {.storyboard}
+====================
+
+### Distribuição da quantidade de compras.
+
+
+```{r}
+orders %>%
+  group_by(user_id) %>%
+  summarise(n = n_distinct(order_id)) %>%
+  ggplot(aes(x = n)) + 
+  geom_histogram(bins = 30, colour = "white", fill = "darkblue") +
+  labs(x = "Quantidade de compras", y = "Quantidade de clientes")
+```
+
+***
+
+A quantidade de compras é uma variável muito assimétrica. Vamos categorizá-la para
+facilitar análises posteriores.
+
+### Categorização da quantidade de compras
+
+```{r}
+users <- orders %>%
+  group_by(user_id) %>%
+  summarise(qtd = n_distinct(order_id)) %>%
+  mutate(qtd_cat = cut(qtd, breaks = c(-Inf, 5, 10, 25, Inf)))
+
+ggplot(users, aes(x = qtd_cat, fill = qtd_cat)) + 
+  geom_bar() +
+  labs(
+    x = "Categoria da Quantidade de compras", 
+    y = "Quantidade de clientes"
+    ) +
+  guides(fill = FALSE)
+```
+
+***
+
+Após a categorização ficamos com grupos relativamente homogêneos.
+
+### Distribuição do tempo médio (em dias) entre as compras
+
+```{r}
+orders %>%
+  group_by(user_id) %>%
+  summarise(tempo_medio = mean(days_since_prior_order, na.rm = TRUE)) %>%
+  filter(!is.na(tempo_medio)) %>%
+  ggplot(aes(x = tempo_medio)) +
+  geom_density(fill = "darkblue") + 
+  geom_vline(aes(xintercept = mean(tempo_medio))) +
+  labs(x = "Tempo médio entre as compras", y = "Quantidade de clientes") +
+  ggtitle(label = "",subtitle = "A linha vertical representa a média.")
+```
+
+***
+
+A disttribuição do tempo médio entre as compras é aparentemente simétrica e os clientes do Instacart fazem aproximadamente 1 compra a cada 15 dias.
+
+### Distribuição do tempo médio (em dias) entre as compras por quantidade de compras
+
+```{r}
+orders %>%
+  group_by(user_id) %>%
+  summarise(tempo_medio = mean(days_since_prior_order, na.rm = TRUE)) %>%
+  filter(!is.na(tempo_medio)) %>%
+  left_join(users, by = "user_id") %>%
+  ggplot(aes(x = tempo_medio, fill = qtd_cat)) +
+  geom_density(alpha = 0.5) + 
+  labs(
+    x = "Tempo médio entre as compras", 
+    y = "Quantidade de clientes",
+    color = "Qtd. de compras")
+```
+
+***
+
+Como esperado, quanto mais compras um cliente fez no Instacart, também foi menor o tempo entre elas.
+
+
+### Será que os usuários compram sempre no mesmo dia da semana?
+
+```{r}
+orders %>%
+  group_by(user_id) %>%
+  summarise(n = n_distinct(order_dow)) %>%
+  group_by(n) %>%
+  summarise(n_user = n_distinct(user_id)) %>%
+  ggplot(aes(x = as.factor(n), y = n_user)) +
+  geom_col(fill = "darkblue") +
+  labs(
+    x = "Número de dias da semana distintos",
+    y = "Quantidade de usuários"
+  )
+```
+
+*** 
+
+Não. Os clientes não parecem manter uma rotina de comprar sempre no mesmo dia da semana.
+
+### Será que os clientes sempre compram no mesmo período?
+
+```{r}
+orders %>%
+  mutate(
+    order_hour_of_day = as.numeric(order_hour_of_day),
+    periodo = case_when(
+      between(order_hour_of_day, 7, 12) ~ "manhã",
+      between(order_hour_of_day, 13, 18) ~ "tarde",
+      between(order_hour_of_day, 19, 24) ~ "noite",
+      TRUE ~ "madrugada"
+    )
+  ) %>%
+  group_by(user_id) %>%
+  summarise(n = n_distinct(periodo)) %>%
+  group_by(n) %>%
+  summarise(n_user = n_distinct(user_id)) %>%
+  ggplot(aes(x = n, y = n_user)) + 
+  geom_col(fill = "darkblue") +
+  labs(
+    x = "Número de períodos distintos",
+    y  = "Quantidade de clientes"
+  )
+```
+
+
+Compras {.storyboard}
+====================
+
+### Distribuição da quantidade de produtos por compra
+
+```{r}
+orders_and_products <- orders %>%
+  left_join(order_products, by = "order_id")
+
+orders_and_products %>%
+  group_by(user_id, order_id) %>%
+  summarise(n = n_distinct(product_id)) %>%
+  ggplot(aes(x = n)) +
+  geom_histogram(color = "white", fill = "darkblue") +
+  labs(x = "Quantidade de produtos", y = "Quantidade de compras")
+```
+
+***
+
+Distribuição bem assimétrica. A grande maioria das compras são pequenas (< 10 produtos)
+
+### Distribuição das compras por hora do dia da compra
+
+```{r}
+orders_and_products %>%
+  group_by(order_hour_of_day) %>%
+  summarise(n = n_distinct(order_id)) %>%
+  ggplot(aes(x = order_hour_of_day, y = n)) + 
+  geom_col(fill = "darkblue") + 
+  labs(
+    x = "Hora do dia",
+    y = "Quantidade de compras"
+  )
+```
+
+*** 
+
+As ordens são bem distribuidas principalmente durante o dia (entre 8h e 19h) principalmente.
+
+
+### Distribuição das compras por dia da semana
+
+```{r}
+orders %>%
+  mutate(order_dow = as.factor(order_dow)) %>%
+  group_by(order_dow) %>%
+  summarise(n = n_distinct(order_id)) %>%
+  ggplot(aes(x = order_dow, y = n)) + 
+  geom_col(fill = "darkblue") %>%
+  labs(
+    x = "Dia da Semana",
+    y = "Quantidade de Compras"
+  )
+```
+
+*** 
+
+Sábado e domingo concentram mais compras do que os demais dias da semana.
+
+### Compras por dia da semana e hora do dia. 
+
+```{r}
+orders %>%
+  mutate(order_dow = as.factor(order_dow)) %>%
+  ggplot(aes(x = order_dow, y = order_hour_of_day)) +
+  geom_jitter(alpha = 0.1, size = 0.05) +
+  stat_summary(
+    aes(y = as.numeric(order_hour_of_day)), 
+    fun.y = median, 
+    geom = "point",
+    colour = "red"
+    ) +
+  labs(
+    x = "Dia da Semana",
+    y = "Hora do dia"
+  )
+```
+
+***
+
+Não parece ter muita diferença...
+
+Produtos
+==============================
+
+Row
+-----------------------------
+
+### Produtos mais vendidos
+
+```{r}
+orders_and_products %>%
+  group_by(product_id) %>%
+  summarise(
+    n_orders = n_distinct(order_id),
+    n_users = n_distinct(user_id)
+    ) %>%
+  filter(row_number(desc(n_orders)) <= 20, !is.na(product_id)) %>%
+  arrange(desc(n_orders)) %>%
+  left_join(products, by = "product_id") %>%
+  select(`Nome do Produto` = product_name, `Quantidade de compras` = n_orders, `Quantidade de Usuários` = n_users) %>%
+  knitr::kable()
+```
+
+### Ordem de colocar no carrinho por departamento
+
+```{r}
+library(ggridges)
+order_products %>%
+  left_join(products, by = "product_id") %>%
+  left_join(departments, by = "department_id") %>%
+  filter(!is.na(department)) %>%
+  mutate(department = fct_reorder(department, add_to_cart_order)) %>%
+  ggplot(aes(y = department, x = add_to_cart_order, fill = department)) +
+  geom_density_ridges() +
+  guides(fill = FALSE) +
+  coord_cartesian(xlim = c(0, 20))
+```
+
+Miscelânea
+===========================
+
+
+Row
+-----------------------
+
+### Percentual de compras com pelo menos um chocolate {.value-box}
+
+```{r}
+orders_and_products %>%
+  left_join(products, by = "product_id") %>%
+  mutate(tem_chocolate = str_detect(product_name, "Chocolate")) %>%
+  group_by(order_id) %>%
+  summarise(tem_chocolate = max(tem_chocolate)) %>%
+  with(tem_chocolate) %>%
+  mean(na.rm = TRUE) %>%
+  scales::percent() %>%
+  valueBox(icon = "fa-child")
+```
+
+### Percentual de compras com pelo menos uma bebida alcoolica {.value-box}
+
+```{r}
+orders_and_products %>%
+  left_join(products, by = "product_id") %>%
+  left_join(departments, by = "department_id") %>%
+  mutate(tem_alcool = department == "alcohol") %>%
+  group_by(order_id) %>%
+  summarise(tem_alcool = max(tem_alcool)) %>%
+  with(tem_alcool) %>%
+  mean(na.rm = TRUE) %>%
+  scales::percent() %>%
+  valueBox(icon = "fa-beer")
+```
+
+### Das compras com bebida alcoolica, qual percentual tem cerveja?
+
+```{r}
+orders_and_products %>%
+  left_join(products, by = "product_id") %>%
+  left_join(departments, by = "department_id") %>%
+  mutate(
+    tem_alcool = department == "alcohol",
+    tem_cerveja = str_detect(product_name, "Beer")
+    ) %>%
+  group_by(order_id) %>%
+  summarise(
+    tem_alcool = max(tem_alcool),
+    tem_cerveja = max(tem_cerveja)
+    ) %>%
+  filter(tem_alcool == 1) %>%
+  with(tem_cerveja) %>%
+  mean(na.rm = TRUE) %>%
+  scales::percent() %>%
+  valueBox(icon = "fa-beer")
+```
+
+
+
